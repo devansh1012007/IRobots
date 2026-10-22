@@ -56,6 +56,15 @@ class MuJoCoSim:
         *,
         options: Mapping[str, Any] | None = None,
     ) -> None:
+        # Offscreen rendering needs a GL backend. On a headless CPU-only box
+        # the options are:
+        #   glfw    - works when there is a display server; the default here
+        #   osmesa  - software rendering, needs `apt install libosmesa6`
+        #   egl     - needs a working EGL device
+        # The value is read from the environment first, so CI can override it.
+        import os as _os
+
+        _os.environ.setdefault("MUJOCO_GL", "glfw")
         import mujoco  # imported lazily so the core stays importable without MuJoCo
 
         self._mujoco = mujoco

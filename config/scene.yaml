@@ -92,8 +92,11 @@ scene:
   # check on that.
   # ---------------------------------------------------------------------------
   lighting:
+    # The exposure is deliberately moderate. At intensity 2.2 the table
+    # rendered at 255 (pure white) and the whole image was clipped, which
+    # leaves a detector with no dynamic range and flattens every object.
     sun:
       elevation_deg: 55.0
       azimuth_deg: 120.0
-      intensity: 2.2
-    ambient: 0.45
+      intensity: 1.1
+    ambient: 0.32

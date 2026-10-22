@@ -1,0 +1,901 @@
+{
+  "summary": {
+    "trials": 30,
+    "detection_rate": 0.43333333333333335,
+    "mean_detect_s": 0.011673958197934552,
+    "p95_detect_s": 0.012752041305066086,
+    "mean_render_s": 0.013746519867951671,
+    "raw_err_mm": {
+      "mean": 29.62471909863656,
+      "p95": 69.98733233661912
+    },
+    "corrected_err_mm": {
+      "mean": 32.43297661407425,
+      "p95": 52.73771518761663
+    },
+    "marker_err_mm": {
+      "mean": 29.624719098643293,
+      "p95": 69.9873323366519
+    },
+    "marker_calibration_rms_mm": 2.8923180968177408e-11,
+    "gate": {
+      "detection_rate_required": 0.95,
+      "p95_xy_error_mm_required": 8.0,
+      "passed": false
+    }
+  },
+  "records": [
+    {
+      "trial": 0,
+      "truth_xy": [
+        -0.008412203602311024,
+        0.2673148053659132
+      ],
+      "truth_px": [
+        326.72240703461677,
+        186.76570313467056
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.013987656973768026,
+      "semantic_labels": [],
+      "semantic_ms": 182.49795405426994,
+      "render_s": 0.11770066799363121,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 1,
+      "truth_xy": [
+        0.017112940500023013,
+        0.20178352961334506
+      ],
+      "truth_px": [
+        305.54119960406655,
+        229.07507115159635
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.012027096003293991,
+      "semantic_labels": [],
+      "semantic_ms": 91.26210695831105,
+      "render_s": 0.005111736012622714,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.017400085504797706,
+        0.15044114066567188
+      ],
+      "corrected_xy": [
+        0.018488416626816096,
+        0.17142213141374257
+      ],
+      "marker_xy": [
+        0.017400085504808243,
+        0.15044114066563954
+      ],
+      "raw_err_mm": 51.34319190611273,
+      "corrected_err_mm": 30.392539137265295,
+      "marker_err_mm": 51.34319190614513
+    },
+    {
+      "trial": 2,
+      "truth_xy": [
+        0.06542274379885231,
+        0.16005325955660837
+      ],
+      "truth_px": [
+        262.63122485186665,
+        258.63959606061826
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011654064990580082,
+      "semantic_labels": [],
+      "semantic_ms": 93.16672501154244,
+      "render_s": 0.007243620988447219,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.06972598449199097,
+        0.19119537130106967
+      ],
+      "corrected_xy": [
+        0.07397401203129372,
+        0.21411492287267542
+      ],
+      "marker_xy": [
+        0.06972598449200056,
+        0.1911953713010433
+      ],
+      "raw_err_mm": 31.438018454851743,
+      "corrected_err_mm": 54.73378873130336,
+      "marker_err_mm": 31.43801845482694
+    },
+    {
+      "trial": 3,
+      "truth_xy": [
+        -0.008505259399933573,
+        0.13434480947817062
+      ],
+      "truth_px": [
+        327.6363215086986,
+        277.9942149089546
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011246811016462743,
+      "semantic_labels": [],
+      "semantic_ms": 99.73678196547553,
+      "render_s": 0.013016631011851132,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 4,
+      "truth_xy": [
+        0.05752818628429503,
+        0.17513640520405124
+      ],
+      "truth_px": [
+        270.2349271730037,
+        247.69882390391797
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011752752005122602,
+      "semantic_labels": [],
+      "semantic_ms": 99.86256901174784,
+      "render_s": 0.005788514041341841,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.05988401208739596,
+        0.17539283582446108
+      ],
+      "corrected_xy": [
+        0.06365535175092117,
+        0.1980894412925705
+      ],
+      "marker_xy": [
+        0.059884012087405875,
+        0.1753928358244331
+      ],
+      "raw_err_mm": 2.36974088829136,
+      "corrected_err_mm": 23.75676792697785,
+      "marker_err_mm": 2.3697408882981903
+    },
+    {
+      "trial": 5,
+      "truth_xy": [
+        0.0767645552346702,
+        0.2013209799965708
+      ],
+      "truth_px": [
+        255.11504562414413,
+        229.3909455857491
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011187095020432025,
+      "semantic_labels": [],
+      "semantic_ms": 98.76554500078782,
+      "render_s": 0.00797983695520088,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.07482036767063013,
+        0.15044114066567194
+      ],
+      "corrected_xy": [
+        0.08001783071133833,
+        0.17374285629767355
+      ],
+      "marker_xy": [
+        0.07482036767063864,
+        0.15044114066564307
+      ],
+      "raw_err_mm": 50.91697080171062,
+      "corrected_err_mm": 27.76934835531379,
+      "marker_err_mm": 50.91697080173914
+    },
+    {
+      "trial": 6,
+      "truth_xy": [
+        0.07696074590364611,
+        0.216486039193803
+      ],
+      "truth_px": [
+        255.8006527394246,
+        219.16616531945658
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011235147016122937,
+      "semantic_labels": [],
+      "semantic_ms": 103.8492739899084,
+      "render_s": 0.007487584021873772,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 7,
+      "truth_xy": [
+        0.03269606344089189,
+        0.2648284508215762
+      ],
+      "truth_px": [
+        293.81791544714764,
+        188.28713358651402
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01107841799966991,
+      "semantic_labels": [],
+      "semantic_ms": 101.71277797780931,
+      "render_s": 0.010429996997117996,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 8,
+      "truth_xy": [
+        -0.07630674796373217,
+        0.1796592052963168
+      ],
+      "truth_px": [
+        385.74343793027543,
+        244.47548415377847
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.010923716996330768,
+      "semantic_labels": [],
+      "semantic_ms": 103.28075196594,
+      "render_s": 0.015098229981958866,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        -0.07679358683602559,
+        0.17115737881090398
+      ],
+      "corrected_xy": [
+        -0.08180285634620658,
+        0.19438963520117963
+      ],
+      "marker_xy": [
+        -0.07679358683603023,
+        0.1711573788108706
+      ],
+      "raw_err_mm": 8.515753969886793,
+      "corrected_err_mm": 15.722365360656868,
+      "marker_err_mm": 8.515753969920393
+    },
+    {
+      "trial": 9,
+      "truth_xy": [
+        -0.04115078579101617,
+        0.22172627989128618
+      ],
+      "truth_px": [
+        354.17273042493616,
+        215.6949672803759
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011434617976192385,
+      "semantic_labels": [],
+      "semantic_ms": 99.15024100337178,
+      "render_s": 0.011024429986719042,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 10,
+      "truth_xy": [
+        0.01016003048318158,
+        0.21006893264486318
+      ],
+      "truth_px": [
+        311.4774727977209,
+        223.45993992945668
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011952364002354443,
+      "semantic_labels": [],
+      "semantic_ms": 100.2820460125804,
+      "render_s": 0.011013743991497904,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.010364834312172012,
+        0.14236360015938776
+      ],
+      "corrected_xy": [
+        0.011017459856622403,
+        0.16297616774634516
+      ],
+      "marker_xy": [
+        0.010364834312182566,
+        0.1423636001593543
+      ],
+      "raw_err_mm": 67.70564224329566,
+      "corrected_err_mm": 47.10056996382878,
+      "marker_err_mm": 67.70564224332917
+    },
+    {
+      "trial": 11,
+      "truth_xy": [
+        -0.04190251174112781,
+        0.14441726071930133
+      ],
+      "truth_px": [
+        357.27279803608826,
+        270.3020423415371
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01106228498974815,
+      "semantic_labels": [],
+      "semantic_ms": 99.08731101313606,
+      "render_s": 0.009073787019588053,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 12,
+      "truth_xy": [
+        -0.049648917424643564,
+        0.24451002616279827
+      ],
+      "truth_px": [
+        360.43819706694006,
+        200.95915947716574
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011194986989721656,
+      "semantic_labels": [],
+      "semantic_ms": 97.25162899121642,
+      "render_s": 0.008781215001363307,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 13,
+      "truth_xy": [
+        0.08426670141346361,
+        0.18980368601056144
+      ],
+      "truth_px": [
+        248.04917527744055,
+        237.33932819508686
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011169703968334943,
+      "semantic_labels": [],
+      "semantic_ms": 102.38976601976901,
+      "render_s": 0.014616732019931078,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.07906541550845728,
+        0.1613953443325969
+      ],
+      "corrected_xy": [
+        0.08439477948786346,
+        0.18474394572611866
+      ],
+      "marker_xy": [
+        0.0790654155084656,
+        0.16139534433256872
+      ],
+      "raw_err_mm": 28.880568760978292,
+      "corrected_err_mm": 5.061361055996213,
+      "marker_err_mm": 28.880568761004504
+    },
+    {
+      "trial": 14,
+      "truth_xy": [
+        -0.04120258266315349,
+        0.1429439922553372
+      ],
+      "truth_px": [
+        356.69996407347037,
+        271.4182379152186
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011244156979955733,
+      "semantic_labels": [],
+      "semantic_ms": 99.43003102671355,
+      "render_s": 0.010656149010173976,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 15,
+      "truth_xy": [
+        -0.05403591914385176,
+        0.24532269928693742
+      ],
+      "truth_px": [
+        363.98121488995497,
+        200.44399270814586
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011748701974283904,
+      "semantic_labels": [],
+      "semantic_ms": 98.30639802385122,
+      "render_s": 0.010543561016675085,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 16,
+      "truth_xy": [
+        -0.005566957714310562,
+        0.1692578265148022
+      ],
+      "truth_px": [
+        324.8411993105215,
+        251.92761860931253
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011341308010742068,
+      "semantic_labels": [],
+      "semantic_ms": 98.53150101844221,
+      "render_s": 0.009238546015694737,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        -0.0065544369456408975,
+        0.18108923112021436
+      ],
+      "corrected_xy": [
+        -0.006918809815150865,
+        0.20144078606631616
+      ],
+      "marker_xy": [
+        -0.006554436945633131,
+        0.1810892311201852
+      ],
+      "raw_err_mm": 11.872541857971136,
+      "corrected_err_mm": 32.211339456733704,
+      "marker_err_mm": 11.872541857941448
+    },
+    {
+      "trial": 17,
+      "truth_xy": [
+        -0.022766862794095306,
+        0.257248187206251
+      ],
+      "truth_px": [
+        338.34628299975105,
+        192.96451973173689
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011488048010505736,
+      "semantic_labels": [],
+      "semantic_ms": 97.04887500265613,
+      "render_s": 0.009225136018358171,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 18,
+      "truth_xy": [
+        0.045528529655919504,
+        0.16208808294309382
+      ],
+      "truth_px": [
+        280.14990022141063,
+        257.14616700771387
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011086869984865189,
+      "semantic_labels": [],
+      "semantic_ms": 98.84453698759899,
+      "render_s": 0.006483661010861397,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.04856622074866564,
+        0.18828985136563786
+      ],
+      "corrected_xy": [
+        0.051457876091320444,
+        0.21051570251115703
+      ],
+      "marker_xy": [
+        0.04856622074867594,
+        0.18828985136561088
+      ],
+      "raw_err_mm": 26.377267402890222,
+      "corrected_err_mm": 48.78925584777924,
+      "marker_err_mm": 26.37726740286461
+    },
+    {
+      "trial": 19,
+      "truth_xy": [
+        -0.05148190680478846,
+        0.264016229774386
+      ],
+      "truth_px": [
+        361.2530184377956,
+        188.78550068564851
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.012672793993260711,
+      "semantic_labels": [],
+      "semantic_ms": 101.24490002635866,
+      "render_s": 0.01404003897914663,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 20,
+      "truth_xy": [
+        -0.028041468833976225,
+        0.2578185009547607
+      ],
+      "truth_px": [
+        342.5859934362515,
+        192.61055300293478
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011881543032359332,
+      "semantic_labels": [],
+      "semantic_ms": 95.10284097632393,
+      "render_s": 0.01293945498764515,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 21,
+      "truth_xy": [
+        -0.0343821287750194,
+        0.25578249670901076
+      ],
+      "truth_px": [
+        347.7401436499687,
+        193.87575050372413
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011243807035498321,
+      "semantic_labels": [],
+      "semantic_ms": 105.63634498976171,
+      "render_s": 0.012248079001437873,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 22,
+      "truth_xy": [
+        0.04104395023995566,
+        0.16616449457277152
+      ],
+      "truth_px": [
+        284.2072853392928,
+        254.17084092240478
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011512072989717126,
+      "semantic_labels": [],
+      "semantic_ms": 99.59967999020591,
+      "render_s": 0.007624265970662236,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.04360599251513612,
+        0.1839587158877588
+      ],
+      "corrected_xy": [
+        0.0462126766784335,
+        0.20601437351970747
+      ],
+      "marker_xy": [
+        0.04360599251514647,
+        0.1839587158877312
+      ],
+      "raw_err_mm": 17.97771878817109,
+      "corrected_err_mm": 40.18368555870988,
+      "marker_err_mm": 17.977718788145225
+    },
+    {
+      "trial": 23,
+      "truth_xy": [
+        -0.02897066521514912,
+        0.17168191090009044
+      ],
+      "truth_px": [
+        345.1389593833111,
+        250.17842908759093
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.011300030979327857,
+      "semantic_labels": [],
+      "semantic_ms": 98.69884501677006,
+      "render_s": 0.011739272973500192,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        -0.03094615877382687,
+        0.17965983032952076
+      ],
+      "corrected_xy": [
+        -0.0327742896464283,
+        0.20120195123361245
+      ],
+      "marker_xy": [
+        -0.03094615877382239,
+        0.1796598303294907
+      ],
+      "raw_err_mm": 8.218866906262637,
+      "corrected_err_mm": 29.7640780154029,
+      "marker_err_mm": 8.21886690623238
+    },
+    {
+      "trial": 24,
+      "truth_xy": [
+        0.012226285701731116,
+        0.1786100772483308
+      ],
+      "truth_px": [
+        309.4563651880591,
+        245.2208663972761
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01191688299877569,
+      "semantic_labels": [],
+      "semantic_ms": 98.88309094822034,
+      "render_s": 0.005276285985019058,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.01301186629154806,
+        0.17256571525915315
+      ],
+      "corrected_xy": [
+        0.013765156389993777,
+        0.19326610571915498
+      ],
+      "marker_xy": [
+        0.013011866291557789,
+        0.17256571525912312
+      ],
+      "raw_err_mm": 6.095198825248672,
+      "corrected_err_mm": 14.736597081171851,
+      "marker_err_mm": 6.095198825279707
+    },
+    {
+      "trial": 25,
+      "truth_xy": [
+        0.005033224810176168,
+        0.2752426203664915
+      ],
+      "truth_px": [
+        316.00401442392763,
+        181.95607627995506
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01128249999601394,
+      "semantic_labels": [],
+      "semantic_ms": 112.55917901871726,
+      "render_s": 0.01157004397828132,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 26,
+      "truth_xy": [
+        0.07424997847748482,
+        0.22862759619144396
+      ],
+      "truth_px": [
+        258.7042619963361,
+        211.17086212842906
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.012436445977073163,
+      "semantic_labels": [],
+      "semantic_ms": 101.32982896175236,
+      "render_s": 0.010119196027517319,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 27,
+      "truth_xy": [
+        0.028895573931711542,
+        0.2399185617175693
+      ],
+      "truth_px": [
+        296.3736310220875,
+        203.8830704681894
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01281688001472503,
+      "semantic_labels": [],
+      "semantic_ms": 106.9670639699325,
+      "render_s": 0.010652097989805043,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 28,
+      "truth_xy": [
+        0.01636921362234986,
+        0.14535797615912296
+      ],
+      "truth_px": [
+        305.4519790479285,
+        269.5909081222072
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01176692999433726,
+      "semantic_labels": [],
+      "semantic_ms": 107.12826100643724,
+      "render_s": 0.011845434026326984,
+      "detected": false,
+      "raw_err_mm": null,
+      "corrected_err_mm": null,
+      "marker_err_mm": null
+    },
+    {
+      "trial": 29,
+      "truth_xy": [
+        0.03866016277278516,
+        0.21310655463352524
+      ],
+      "truth_px": [
+        287.656007915576,
+        221.42147933382688
+      ],
+      "n_detections": 1,
+      "labels": [
+        "red"
+      ],
+      "detect_s": 0.01257305801846087,
+      "semantic_labels": [],
+      "semantic_ms": 111.68418702436611,
+      "render_s": 0.01382764702429995,
+      "detected": true,
+      "label": "red",
+      "confidence": 1.0,
+      "raw_xy": [
+        0.038487786171267344,
+        0.13969688953934395
+      ],
+      "corrected_xy": [
+        0.04110274365595095,
+        0.16175761700691277
+      ],
+      "marker_xy": [
+        0.03848778617127817,
+        0.13969688953931222
+      ],
+      "raw_err_mm": 73.40986747660433,
+      "corrected_err_mm": 51.40699949182548,
+      "marker_err_mm": 73.40986747663602
+    }
+  ]
+}

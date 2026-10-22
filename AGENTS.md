@@ -62,6 +62,15 @@ These are enforced in code, not merely documented. Do not weaken them.
 - CI is logic + physics only. Rendering tests are local/nightly: a software
   rasteriser in CI is slow and flaky.
 
+## Delegation
+
+Work is delegated to sub-agents under a written protocol:
+[`docs/agent-ops/README.md`](docs/agent-ops/README.md). Every brief must
+name the agent's **branch and working directory** explicitly, and parallel
+agents get their own git worktree. The brief template is
+[`docs/agent-ops/brief-template.md`](docs/agent-ops/brief-template.md), and
+the roster is [`docs/agent-ops/roster.md`](docs/agent-ops/roster.md).
+
 ## Traceability
 
 - Code comments and commit messages carry the plan change ID:

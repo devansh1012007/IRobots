@@ -195,9 +195,12 @@ def build_mjcf(
     add("  <asset>")
     add('    <texture name="sky" type="skybox" builtin="gradient" rgb1="0.5 0.6 0.75" '
         'rgb2="0.15 0.18 0.25" width="512" height="3072"/>')
-    add('    <texture name="table" type="2d" builtin="checker" rgb1="0.32 0.33 0.36" '
-        'rgb2="0.28 0.29 0.32" width="512" height="512"/>')
-    add('    <material name="table_mat" texture="table" texrepeat="4 4" reflectance="0.05"/>')
+    # A MATTE, plain surface. docs/hardware.md is explicit that the table
+    # must be matte and unpatterned: a glossy or patterned table throws
+    # specular highlights and reads as objects. It also keeps the geometric
+    # detector's "what is the table colour" question well posed.
+    add('    <material name="table_mat" rgba="0.38 0.39 0.42 1" specular="0.05" '
+        'shininess="0.02" reflectance="0"/>')
     add("  </asset>")
     add("  <worldbody>")
     add('    <light name="sun" pos="0.3 0.2 1.2" dir="-0.3 -0.2 -1" directional="true" '
