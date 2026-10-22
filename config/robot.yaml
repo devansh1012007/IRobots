@@ -1,0 +1,165 @@
+# The robot, as specified.
+#
+# This file is the SINGLE SOURCE OF TRUTH for the arm's geometry, joint limits
+# and servo mapping. It is consumed by:
+#   - irobots_core.robot_model   (kinematics, safety, planning)
+#   - irobots_core.sim           (MuJoCo model construction)
+#   - tools/gen_firmware_config.py  (-> firmware/esp32_arm/generated/robot_config.h)
+#
+# PROVENANCE TAGS (PLAN:irobots-v2:C06)
+#   measured : read off the STL meshes in robotic arm schematics/5-dof-robotic-arm-5.snapshot.3.zip
+#   design   : chosen by us because the SolidWorks assembly is an opaque binary with no
+#              recoverable joint frames, axes, or limits
+#   assumed  : a guess that must be replaced by measurement on the real arm
+#
+# The arm is NOT physically assembled. Every grasp claim in this project is a claim
+# about the robot described here, not about hardware. See docs/RESULTS.md for the
+# "not verified without the physical arm" list.
+
+robot:
+  name: irobots_arm_5dof
+  description: >
+    Functional equivalent of the 5-DOF arm in robotic arm schematics/, with a
+    yaw-then-pitch wrist so that the jaw closing direction is independently
+    controllable (a yaw-pitch-roll wrist cannot do this, and would force
+    corner-grasps on every object).
+
+  # ---------------------------------------------------------------------------
+  # Link geometry. Lengths are measured from the STL bounding boxes.
+  # ---------------------------------------------------------------------------
+  links:
+    base_height:      {value: 0.050, provenance: measured, note: "Rotating Waste servo bore at Z=50mm"}
+    upper_arm:        {value: 0.194, provenance: measured, note: "Arm 1.STL bbox X extent; servo flanges 140mm apart"}
+    fore_arm:         {value: 0.130, provenance: measured, note: "Arm 2.STL bbox X extent; boss hole 103mm from X=0"}
+    wrist_post:       {value: 0.034, provenance: measured, note: "Arm 3.STL bbox X extent"}
+    gripper_link:     {value: 0.039, provenance: measured, note: "Gripper Link.STL bbox"}
+    grip_thickness:   {value: 0.0085, provenance: measured, note: "Grip.STL bbox"}
+
+  # ---------------------------------------------------------------------------
+  # Joints, in chain order. Axes are in the parent link frame.
+  #   z : rotation about the vertical axis
+  #   y : rotation about the horizontal axis pointing "forward"
+  #
+  # CHAIN: base_yaw -> shoulder_pitch -> elbow_pitch -> wrist_pitch -> wrist_yaw
+  #
+  # The three pitch joints are planar, so the arm works in a vertical plane
+  # whose azimuth is set by base_yaw. wrist_yaw sits at the TOOL TIP and
+  # rotates about the vertical axis, which means:
+  #   - for a downward-pointing tool it moves the tip NOT AT ALL, so it is a
+  #     pure tool-yaw DOF that controls the jaw closing direction;
+  #   - the arm therefore has 3 DOF for position and 2 for orientation, which
+  #     is exactly what a jaw-closing-direction-aware grasp needs.
+  # A yaw-pitch-roll wrist could NOT do this: its roll axis is the approach
+  # axis, so the jaw direction would be locked to the reach direction and every
+  # grasp would be a corner grasp.
+  # ---------------------------------------------------------------------------
+  joints:
+    - name: base_yaw
+      type: hinge
+      axis: [0.0, 0.0, 1.0]
+      parent: base
+      child: upper_arm
+      origin: [0.0, 0.0, 0.0]
+      limits: {min: -170.0, max: 170.0, provenance: design, note: "+/-170 deg"}
+      max_velocity: 2.6
+      max_acceleration: 6.0
+
+    - name: shoulder_pitch
+      type: hinge
+      axis: [0.0, 1.0, 0.0]
+      parent: upper_arm
+      child: fore_arm
+      origin: [0.0, 0.0, 0.050]
+      limits: {min: -20.0, max: 95.0, provenance: design, note: "-20..+95 deg"}
+      max_velocity: 2.0
+      max_acceleration: 5.0
+
+    - name: elbow_pitch
+      type: hinge
+      axis: [0.0, 1.0, 0.0]
+      parent: fore_arm
+      child: wrist
+      origin: [0.194, 0.0, 0.0]
+      limits: {min: -160.0, max: 160.0, provenance: design, note: "+/-160 deg; a 180-deg servo with horn offset"}
+      max_velocity: 2.2
+      max_acceleration: 5.0
+
+    - name: wrist_pitch
+      type: hinge
+      axis: [0.0, 1.0, 0.0]
+      parent: wrist
+      child: tool
+      origin: [0.130, 0.0, 0.0]
+      limits: {min: -150.0, max: 150.0, provenance: design, note: "+/-150 deg"}
+      max_velocity: 2.5
+      max_acceleration: 6.0
+
+    - name: wrist_yaw
+      type: hinge
+      axis: [0.0, 0.0, 1.0]
+      parent: tool
+      child: fingers
+      origin: [0.073, 0.0, 0.0]
+      limits: {min: -170.0, max: 170.0, provenance: design, note: "+/-170 deg; at the tool tip"}
+      max_velocity: 3.0
+      max_acceleration: 8.0
+
+  # ---------------------------------------------------------------------------
+  # The gripper is two prismatic fingers driven symmetrically by ONE controller.
+  # A MimicJoint is deliberately NOT used: it is a known integration trap.
+  # ---------------------------------------------------------------------------
+  gripper:
+    fingers: 2
+    axis: [1.0, 0.0, 0.0]
+    rest_offset: 0.00425     # half of the minimum opening
+    # The minimum opening is the jaw's own stop (the 8.5mm grip). The MAXIMUM
+    # opening is a design value: the CAD's 49mm gear arms are a geared
+    # four-bar, so the jaw stroke is wider than the link length, and a
+    # gripper that opens only 5mm wider than its payload has no tolerance for
+    # a 3mm positioning error - the pads clip the object on the way down.
+    # This value needs measurement on the real arm.
+    limits: {min: 0.008, max: 0.070, provenance: design, note: "min: Grip.STL 8.5mm; max: design, needs measurement"}
+    max_velocity: 0.05
+    max_acceleration: 0.2
+    tip_length: 0.039
+
+  # ---------------------------------------------------------------------------
+  # Servo mapping, for the firmware (PCA9685 channels).
+  # ---------------------------------------------------------------------------
+  servos:
+    pca9685_address: 0x40
+    pwm_frequency_hz: 50
+    pulse_width_us: {min: 500, max: 2400, provenance: assumed, note: "SG90 spec; MG996R needs 1000-2000"}
+    channels:
+      base_yaw: 0
+      shoulder_pitch: 1
+      elbow_pitch: 2
+      wrist_yaw: 3
+      wrist_pitch: 4
+      gripper: 5
+
+  # ---------------------------------------------------------------------------
+  # Derived limits used by the safety supervisor (PLAN:irobots-v2:C09).
+  # ---------------------------------------------------------------------------
+  safety:
+    # The reachable workspace is a DISK, not the legacy 35x35cm square.
+    # 194+130+34 = 358mm from the shoulder; minus the 39mm gripper link and the
+    # 8.5mm grip leaves ~310mm usable radius. The legacy square anchored at a
+    # base corner put its far corner 495mm away: physically unreachable.
+    # Must match scene.workspace in config/scene.yaml.
+    workspace:
+      centre_xy: [0.0, 0.20]
+      radius: 0.10
+      z_min: 0.0
+      z_max: 0.30
+      provenance: design
+    # Nothing may go below the table surface.
+    table_plane_z: 0.0
+    table_clearance: 0.002      # 2mm: the tool must not scrape the table
+    # Self-collision: keep the upper arm away from the base column.
+    self_collision_radius: 0.06
+
+  # ---------------------------------------------------------------------------
+  # Nominal home pose (radians). Used to initialise the sim and to reset.
+  # ---------------------------------------------------------------------------
+  home_pose: {base_yaw: 0.0, shoulder_pitch: 0.0, elbow_pitch: 1.2, wrist_yaw: 0.0, wrist_pitch: 0.6, gripper: 0.045}

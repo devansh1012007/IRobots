@@ -1,2 +1,30 @@
-camera_index.h
-camera
+# Build artefacts, environments and captured data
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# Model weights: fetched with tools/fetch_weights.sh, never committed.
+# The SHA-256 of every weight is recorded in weights/SHA256SUMS and in the
+# results files, so a result can be tied to an exact weight file.
+# The whole directory is ignored, including nested caches such as
+# weights/clip/, which hold a 350MB text encoder.
+weights/
+
+# Results: produced by code, never transcribed by hand. The Phase 0 gate
+# results ARE committed, because spike/REPORT.md cites them as evidence.
+runs/*
+!runs/spike/
+
+# Logs from the install scripts
+.logs/
+
+# Local scratch
+scratch/
+*.part
+
+# Scratch: the pre-rebuild audit, superseded by legacy/README.md.
+Audit.md

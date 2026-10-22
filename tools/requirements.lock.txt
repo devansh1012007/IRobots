@@ -1,0 +1,25 @@
+# Locked dependency set for the irobots project.
+#
+# torch is NOT in this file on purpose: it is installed from the CPU-only
+# index by tools/install_deps.sh, because the default PyPI torch pulls ~2.5GB
+# of CUDA wheels on Linux and this project is CPU-only.
+#
+# Regenerate with:  tools/install_deps.sh && pip freeze > tools/requirements.lock.txt
+
+numpy==2.5.4
+mujoco==3.16.0
+opencv-python==5.0.0.93
+opencv-python-headless==5.0.0.93
+# torchvision must match torch AND come from the CPU-only index: the
+# PyPI build is the CUDA one and fails with 'operator torchvision::nms
+# does not exist'. ultralytics auto-installs it if it is missing, which
+# is why it is pinned here rather than left to the resolver.
+torchvision==0.29.1
+ultralytics==8.4.183
+pillow==13.0.0
+scipy==1.18.1
+matplotlib==3.11.2
+pyyaml==6.0.3
+pytest==9.1.1
+ruff==0.17.1
+mypy==2.4.0

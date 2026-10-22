@@ -1,0 +1,99 @@
+# The scene: table, workspace, camera, and the objects the arm will manipulate.
+#
+# The camera geometry is SPECIFIED here (PLAN:irobots-v2:D12) because no physical
+# mount exists yet. This file is the contract that the MuJoCo scene builder and
+# the real-camera capture procedure must both satisfy, so that perception code is
+# identical in simulation and on hardware.
+
+scene:
+  name: irobots_table
+
+  table:
+    # The table must be big enough that the workspace disk and the rim both
+    # sit ON it, with the base near the back edge. An earlier version had a
+    # 0.50x0.40 table with a workspace reaching to y=0.39, so the arm had to
+    # reach OVER the rim to reach the objects - the rim blocked every motion.
+    size_xy: [0.55, 0.50]
+    position: [0.0, 0.12]
+    height: 0.0            # the table surface is z=0, the plane everything is measured from
+    thickness: 0.02
+    # A rim around the table makes "the object was lifted" distinguishable from
+    # "the object was knocked off the table". Without it the outcome vocabulary
+    # is ambiguous and the verification predicates cannot be trusted.
+    rim:
+      height: 0.02
+      thickness: 0.01
+      enabled: true
+
+  # The base sits at the world origin, 0.12m in from the back edge of the table.
+  base_position: [0.0, 0.0, 0.0]
+
+  workspace:
+    # A DISK, not the legacy 35x35cm square. The arm's reach is 0.397m from
+    # the base; the far edge here is 0.29m away, which leaves margin for the
+    # tool rather than sitting on the reach singularity. The legacy square
+    # anchored at a base corner had its far corner 495mm away: unreachable.
+    centre_xy: [0.0, 0.20]
+    radius: 0.10
+    provenance: design
+
+  # ---------------------------------------------------------------------------
+  # Camera. Tilted, NOT top-down.
+  #
+  # A strictly overhead camera cannot observe object height at all: a vertical
+  # object's height projects to almost no pixels. A 35 degree tilt makes height
+  # partially observable and improves footprint localisation. The legacy design
+  # in docs/hardware.md specified straight-down, which is why its Z was guessed.
+  #
+  # The pose is derived from the tilt: the camera sits 0.55*tan(35) = 0.385m
+  # behind the workspace centre, looking down at the workspace centre.
+  # ---------------------------------------------------------------------------
+  camera:
+    name: overhead_tilted
+    # Camera centre, in world coordinates.
+    position: [0.0, -0.185, 0.55]
+    # Pointing at the workspace centre, 35 degrees from vertical.
+    target: [0.0, 0.20, 0.0]
+    tilt_from_vertical_deg: 35.0
+    # Horizontal field of view. Calibrated, not assumed.
+    hfov_deg: 60.0
+    # 640x480 is the FLOOR: at 320x240 (the ESP32-CAM's native mode) a 4cm cube
+    # is only 17x24 px, which is below the size at which open-vocabulary
+    # detectors retain AP. The 320x240 case is measured on the real image set,
+    # not assumed away.
+    width: 640
+    height: 480
+    near: 0.01
+    far: 5.0
+    # The ESP32-CAM outputs JPEG at quality 10 (0-63 scale) from a 320x240
+    # sensor mode. Rendering is noise-free; the real frames are not.
+    provenance: design
+
+  # ---------------------------------------------------------------------------
+  # Objects. The task objects are the small blocks the arm must pick.
+  # ---------------------------------------------------------------------------
+  objects:
+    cube:
+      shape: box
+      size: [0.04, 0.04, 0.04]
+      mass: 0.04
+      friction: 0.6
+      provenance: design
+    tall_cube:
+      shape: box
+      size: [0.03, 0.03, 0.09]
+      mass: 0.05
+      friction: 0.6
+      provenance: design
+
+  # ---------------------------------------------------------------------------
+  # Lighting. Gazebo's defaults are brighter and more uniform than a desk lamp,
+  # so the rendered set is optimistic. The real-image set in Phase 2 is the
+  # check on that.
+  # ---------------------------------------------------------------------------
+  lighting:
+    sun:
+      elevation_deg: 55.0
+      azimuth_deg: 120.0
+      intensity: 2.2
+    ambient: 0.45

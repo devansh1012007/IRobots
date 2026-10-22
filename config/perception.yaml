@@ -1,0 +1,99 @@
+# Perception configuration: what the detector looks for, and how heights are
+# estimated when we cannot measure them.
+#
+# PLAN:irobots-v2:C12, C15
+
+perception:
+  detector:
+    # YOLO-World gives the CLASS LABEL the legacy pipeline never had.
+    # sam2_processor.py emitted anonymous masks, so "the red block" could not be
+    # bound to an object at all.
+    model: yolov8s-world.pt
+    imgsz: 640
+    conf_threshold: 0.30
+    iou_threshold: 0.55
+    max_detections: 20
+    device: cpu
+    # Open-vocabulary: the vocabulary is set per task, not baked into the model.
+    # Setting it is not free (the text embeddings are recomputed), so results
+    # are cached per vocabulary.
+    cache_vocabulary: true
+
+  # The vocabulary for the graded tasks. Ordered: earlier names win ties.
+  vocabulary:
+    - red block
+    - blue block
+    - green block
+    - yellow block
+    - cube
+    - block
+    - bin
+
+  # ---------------------------------------------------------------------------
+  # Class height priors. THE FALLBACK, not the primary path.
+  #
+  # The probe (Tier P) is primary because it measures. This table is what the
+  # system believes when it cannot afford to measure. Values are the physical
+  # heights of the objects in config/scene.yaml, in metres.
+  # ---------------------------------------------------------------------------
+  height_priors:
+    red block:   {height: 0.040, footprint: 0.040, provenance: design}
+    blue block:  {height: 0.040, footprint: 0.040, provenance: design}
+    green block: {height: 0.040, footprint: 0.040, provenance: design}
+    yellow block: {height: 0.040, footprint: 0.040, provenance: design}
+    cube:        {height: 0.040, footprint: 0.040, provenance: design}
+    block:       {height: 0.040, footprint: 0.040, provenance: design}
+    bin:         {height: 0.030, footprint: 0.080, provenance: design}
+
+  # ---------------------------------------------------------------------------
+  # Height estimation strategy (PLAN:irobots-v2:D6).
+  # ---------------------------------------------------------------------------
+  height:
+    # probe | prior | vanishing_point
+    # Probe first: it MEASURES. The vanishing point is disabled by default
+    # because the silhouette equation h = f(H cos t + D sin t)/Z has two
+    # unknowns - inverting a 4cm cube at 35 degrees gives 6.9cm (+72%).
+    strategy: probe
+    allow_fallback_to_prior: true
+    enable_vanishing_point: false
+    # How far the gripper may descend while probing, in metres above the table.
+    probe:
+      min_clearance: 0.002
+      max_clearance: 0.030
+      step: 0.004
+      # The probe reads the row where the jaw starts to occlude the object's
+      # top edge. This is the pixel tolerance for declaring that row.
+      occlusion_row_tolerance_px: 3
+
+  # ---------------------------------------------------------------------------
+  # Contact point estimation.
+  #
+  # The bottom edge of an axis-aligned box resting on a table is its FRONT
+  # bottom edge, not its footprint centre. Back-projecting it lands D/2 toward
+  # the camera - 2.0cm for a 4cm cube. The correction is applied using the
+  # estimated footprint depth D.
+  # ---------------------------------------------------------------------------
+  contact_point:
+    method: front_bottom_edge
+    apply_depth_correction: true
+    # Where the D estimate comes from when the mask has no visible top face.
+    footprint_source: prior
+
+  # ---------------------------------------------------------------------------
+  # Identity tracking (PLAN:irobots-v2:D4). A per-frame detection index is
+  # broken: "the red block" is ID 2 this frame and ID 3 next frame.
+  # ---------------------------------------------------------------------------
+  tracker:
+    iou_threshold: 0.25
+    max_centroid_shift_m: 0.03
+    max_age_frames: 5
+    confirm_frames: 2
+
+  # ---------------------------------------------------------------------------
+  # Calibration acceptance. A calibration that is worse than this is refused
+  # rather than used, because a silently-wrong calibration produces plausible
+  # positions that are consistently wrong.
+  # ---------------------------------------------------------------------------
+  calibration:
+    max_reprojection_rms_m: 0.005
+    min_markers: 4

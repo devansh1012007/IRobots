@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "irobots_core"
+version = "0.1.0"
+description = "Pure-Python core for the IRobots v2 LLM-manipulation research artifact"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# The detector and the simulator are heavy and optional: the core's
+# algorithms must stay importable without them.
+perception = ["torch", "torchvision", "ultralytics", "opencv-python"]
+sim = ["mujoco", "scipy"]
+dev = ["pytest", "ruff", "mypy"]
+
+[tool.setuptools.packages.find]
+include = ["irobots_core*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = false

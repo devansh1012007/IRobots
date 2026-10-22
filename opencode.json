@@ -1,0 +1,43 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md", "PLAN.md"],
+  "permission": {
+    "bash": {
+      "*": "allow",
+      "rm -rf *": "deny",
+      "sudo *": "ask",
+      "git push*": "ask",
+      "git reset --hard*": "ask",
+      "pip install*": "ask",
+      "uv pip install*": "ask"
+    }
+  },
+  "agent": {
+    "irobots-explorer": {
+      "description": "Read-only investigator for the irobots project.",
+      "mode": "subagent",
+      "permission": { "edit": "deny" }
+    },
+    "irobots-implementer": {
+      "description": "Implements changes against a written spec and runs the tests.",
+      "mode": "subagent"
+    },
+    "irobots-reviewer": {
+      "description": "Adversarial reviewer; tries to break the change.",
+      "mode": "subagent",
+      "permission": { "edit": "deny" }
+    },
+    "irobots-perception": {
+      "description": "Perception: detector, calibration, height, tracking, grasps.",
+      "mode": "subagent"
+    },
+    "irobots-physics": {
+      "description": "Simulation, kinematics, trajectories, safety, determinism.",
+      "mode": "subagent"
+    },
+    "irobots-firmware": {
+      "description": "ESP32 firmware, wire protocol, emulator, conformance.",
+      "mode": "subagent"
+    }
+  }
+}

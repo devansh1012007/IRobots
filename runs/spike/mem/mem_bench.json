@@ -1,0 +1,15 @@
+{
+  "budget_mb": 2500.0,
+  "stages": {
+    "python baseline": 11.8,
+    "+ numpy": 26.7,
+    "+ mujoco": 48.0,
+    "+ core (robot, scene)": 49.6,
+    "+ mujoco scene + physics": 64.5,
+    "+ torch": 255.5,
+    "+ YOLO-World (loaded)": 1060.0,
+    "+ YOLO-World (inference)": 1075.0
+  },
+  "peak_rss_mb": 1815.0,
+  "within_budget": true
+}
