@@ -15,7 +15,8 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Sequence
+from collections.abc import Sequence
+from typing import Final
 
 import numpy as np
 
@@ -35,6 +36,7 @@ class Detection:
     #: The detection's index within this frame. NOT an identity: an id that
     #: survives across frames is the tracker's job.
     index: int
+    mask: np.ndarray | None = None
 
     @property
     def center_px(self) -> tuple[float, float]:
@@ -146,7 +148,7 @@ class WorldDetector:
         out.sort(key=lambda d: -d.confidence)
         # Re-index after the sort so the index is the detection's rank.
         return [
-            Detection(d.label, d.confidence, d.bbox_px, i) for i, d in enumerate(out)
+            Detection(d.label, d.confidence, d.bbox_px, i, d.mask) for i, d in enumerate(out)
         ]
 
 
@@ -157,3 +159,37 @@ def timed_detect(
     start = time.perf_counter()
     detections = detector.detect(frame)
     return detections, time.perf_counter() - start
+
+
+
+def filter_detections_by_vocabulary(
+    detections: Sequence[Detection],
+    vocabulary: Sequence[str],
+) -> list[Detection]:
+    """Bind detections against the task's open-vocabulary list (PLAN:irobots-v2:C12, T13, T14).
+
+    Earlier vocabulary entries win ties, matching ``config/perception.yaml``.
+    """
+    vocab = [v.strip() for v in vocabulary if v.strip()]
+    if not vocab:
+        return []
+    out: list[Detection] = []
+    for d in detections:
+        lbl = d.label.lower().strip()
+        matched_label: str | None = None
+        for v in vocab:
+            vl = v.lower()
+            if lbl == vl or vl.startswith(lbl + " ") or (lbl in ("cube", "block") and vl in ("cube", "block")):
+                matched_label = v
+                break
+        if matched_label is not None:
+            out.append(
+                Detection(
+                    label=matched_label,
+                    confidence=d.confidence,
+                    bbox_px=d.bbox_px,
+                    index=len(out),
+                    mask=d.mask,
+                )
+            )
+    return out

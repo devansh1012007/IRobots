@@ -29,7 +29,8 @@ from __future__ import annotations
 import colorsys
 import math
 from dataclasses import dataclass
-from typing import Final, Sequence
+from collections.abc import Sequence
+from typing import Any, Final
 
 import numpy as np
 
@@ -100,7 +101,7 @@ class GeometricDetectorConfig:
 class GeometricDetector:
     """Finds the distinct objects on the table, by appearance.
 
-    :param camera: the calibrated camera, used to find the workspace's image
+    :param camera: the calibrated camera: Any, used to find the workspace's image
         region and to convert the scene's table colour into image space.
     :param workspace_centre: the workspace centre in the arm base frame.
     :param workspace_radius: the workspace radius in the arm base frame.
@@ -110,7 +111,7 @@ class GeometricDetector:
 
     def __init__(
         self,
-        camera,
+        camera: Any,
         workspace_centre: tuple[float, float],
         workspace_radius: float,
         *,
@@ -234,9 +235,10 @@ class GeometricDetector:
                     confidence=1.0,
                     bbox_px=(float(x), float(y), float(x + w), float(y + h)),
                     index=len(out),
+                    mask=component,
                 )
             )
         out.sort(key=lambda d: -(d.bbox_px[2] - d.bbox_px[0]) * (d.bbox_px[3] - d.bbox_px[1]))
         return [
-            Detection(d.label, d.confidence, d.bbox_px, i) for i, d in enumerate(out)
+            Detection(d.label, d.confidence, d.bbox_px, i, d.mask) for i, d in enumerate(out)
         ]
