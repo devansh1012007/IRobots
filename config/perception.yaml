@@ -1,7 +1,7 @@
 # Perception configuration: what the detector looks for, and how heights are
 # estimated when we cannot measure them.
 #
-# PLAN:irobots-v2:C12, C15, C65, C67-F3
+# PLAN:irobots-v2:C12, C15, C65, C67-F3, C67-F4
 
 perception:
 
@@ -27,6 +27,18 @@ perception:
     resize_to_scene: true
     calibration_file: ""
     allow_real_camera_with_sim_arm: false
+    provenance: design
+
+  # ---------------------------------------------------------------------------
+  # Web console server settings (PLAN:irobots-v2:C66, C67-F4).
+  # Bound to loopback by default; override via IROBOTS_WEB_HOST / IROBOTS_WEB_PORT
+  # or `--port N` CLI flag.
+  # ---------------------------------------------------------------------------
+  web_console:
+    host: 127.0.0.1
+    port: 8080
+    allow_remote_bind: false
+    max_body_bytes: 65536
     provenance: design
 
   detector:

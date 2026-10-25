@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IRobots v2 // Operator Telemetry & Closed-Loop Control Console</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>IRobots v2 // Operator Telemetry &amp; Closed-Loop Control Console</title>
   <style>
     :root {
       --bg-void: #08090a;
@@ -30,20 +26,83 @@
     }
     body {
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       background-color: var(--bg-void);
       color: var(--text-primary);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       font-size: 13px;
       line-height: 1.4;
-      overflow-x: hidden;
+      user-select: none;
     }
     .mono {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       font-variant-numeric: tabular-nums;
+    }
+    .topbar {
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-hairline);
+      padding: 8px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .row-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      padding: 3px 8px;
+      font-size: 11px;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+    .badge-ok {
+      background-color: #0b221a;
+      border-color: var(--status-green);
+      color: var(--status-green);
+    }
+    .badge-warn {
+      background-color: #291d0a;
+      border-color: var(--status-amber);
+      color: var(--status-amber);
+    }
+    .badge-err {
+      background-color: #290f12;
+      border-color: var(--status-red);
+      color: var(--status-red);
+    }
+    .workspace-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 3fr 6fr 3fr;
+      gap: 8px;
+      padding: 8px;
+    }
+    @media (max-width: 1100px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .col-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .panel {
       background-color: var(--bg-panel);
       border: 1px solid var(--border-hairline);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-fill {
+      flex: 1;
     }
     .panel-header {
       background-color: var(--bg-elevated);
@@ -57,6 +116,39 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 6px;
+    }
+    .panel-body {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+    .field-label {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .input-ctrl, .select-ctrl {
+      width: 100%;
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      padding: 5px 8px;
+      font-size: 12px;
     }
     .btn-tech {
       background-color: var(--bg-elevated);
@@ -64,17 +156,15 @@
       color: var(--text-primary);
       padding: 5px 10px;
       font-size: 11px;
-      font-weight: 500;
-      border-radius: 2px;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 120ms ease, border-color 120ms ease;
     }
     .btn-tech:hover:not(:disabled) {
       background-color: var(--bg-hover);
       border-color: #4b5563;
     }
     .btn-tech:disabled {
-      opacity: 0.4;
+      opacity: 0.38;
       cursor: not-allowed;
     }
     .btn-tech-active {
@@ -82,1898 +172,766 @@
       border-color: var(--text-primary);
       color: #ffffff;
     }
+    .btn-approve {
+      border-color: var(--status-green);
+      color: var(--status-green);
+    }
     .btn-estop {
-      background-color: #290f12;
-      border: 1px solid var(--status-red);
-      color: #fca5a5;
-      padding: 5px 12px;
-      font-size: 11px;
+      background-color: #3b0d11;
+      border: 2px solid var(--status-red);
+      color: #fecaca;
+      padding: 6px 14px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      border-radius: 2px;
+      letter-spacing: 0.06em;
       cursor: pointer;
     }
     .btn-estop:hover {
-      background-color: #3f1318;
+      background-color: #521117;
     }
     .btn-estop-latched {
       background-color: var(--status-red);
-      border: 1px solid #ffffff;
+      border-color: #ffffff;
       color: #08090a;
     }
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
+    .viewport-box {
+      position: relative;
+      background-color: var(--bg-void);
       width: 100%;
-      height: 4px;
-      background: #232830;
-      outline: none;
-      border-radius: 0;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
     }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 10px;
-      height: 14px;
-      background: #d1d5db;
-      border: 1px solid #08090a;
-      cursor: pointer;
+    .viewport-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    .viewport-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background-color: #0f1114;
+      border: 1px solid var(--border-hairline);
+      padding: 4px 8px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      pointer-events: none;
     }
-    ::-webkit-scrollbar-track {
-      background: #08090a;
+    .scroll-box {
+      background-color: var(--bg-void);
+      padding: 8px;
+      overflow-y: auto;
+      max-height: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
-    ::-webkit-scrollbar-thumb {
-      background: #262b33;
+    .chat-card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-hairline);
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+    .chat-card-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 3px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .data-table th, .data-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-hairline);
+      text-align: left;
+    }
+    .data-table th {
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .plan-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 8px;
+      border: 1px solid var(--border-hairline);
+      background-color: var(--bg-elevated);
+      font-size: 11px;
+    }
+    .pred-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 6px;
+      border: 1px solid var(--border-hairline);
+      background-color: var(--bg-void);
+      font-size: 10px;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col select-none">
+<body>
 
-  <!-- TOP TELEMETRY & SAFETY HEADER BAR -->
-  <header class="w-full bg-[#0f1114] border-b border-[#232830] px-3 py-2 flex flex-wrap items-center justify-between gap-2">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2">
-        <span id="sysStatusDot" class="inline-block w-2.5 h-2.5 bg-[#10b981]"></span>
-        <span class="mono font-bold text-xs tracking-wider text-[#e5e7eb]">IROBOTS.V2 // 5-DOF CONTROL CONSOLE</span>
-      </div>
-      <span class="text-[#323944]">|</span>
-      <span id="safetyBannerBadge" class="mono text-[11px] px-2 py-0.5 bg-[#0b221a] border border-[#10b981] text-[#10b981]">
-        I2 SUPERVISOR: APPROVED (0 REJECTIONS)
-      </span>
-      <span id="invariantBadge" class="hidden md:inline-block mono text-[11px] px-2 py-0.5 bg-[#15181d] border border-[#232830] text-[#9ca3af]">
-        I1: NO-COORD-LLM · I3: 1-SKILL/OBS · I6: PAUSE-ON-THINK
-      </span>
+  <!-- TOP TELEMETRY, CONNECTION & SAFETY HEADER BAR -->
+  <header class="topbar">
+    <div class="row-wrap">
+      <span class="mono" style="font-weight:700; letter-spacing:0.05em;">IROBOTS.V2 // THIN-CLIENT OPERATOR CONSOLE</span>
+      <span id="connectionBanner" class="badge badge-warn mono">CONNECTING TO /api/state...</span>
+      <span id="modeBadge" class="badge badge-ok mono">SIM</span>
+      <span id="safetyBannerBadge" class="badge badge-ok mono">I2 SUPERVISOR: APPROVED (0 REJECTIONS)</span>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2">
-      <!-- Mode Switcher: PLAN / RUN / STEP / REPLAY -->
-      <div class="flex items-center bg-[#08090a] border border-[#232830] p-0.5" role="group" aria-label="Execution Mode">
-        <button id="modePlanBtn" type="button" class="btn-tech btn-tech-active mono" title="Plan & Approve Mode (Key: P)">PLAN [P]</button>
-        <button id="modeRunBtn" type="button" class="btn-tech mono" title="Autonomous Closed-Loop Run Mode">RUN</button>
-        <button id="modeStepBtn" type="button" class="btn-tech mono" title="Single-Step Skill Mode (Key: S)">STEP [S]</button>
-        <button id="modeReplayBtn" type="button" class="btn-tech mono" title="Transcript Replay & SHA-256 Verification (Key: R)">REPLAY [R]</button>
+    <div class="row-wrap">
+      <div class="row-wrap" role="group" aria-label="Camera Source">
+        <button id="camSimBtn" type="button" class="btn-tech btn-tech-active mono" title="Switch to SimCameraSource (/api/camera_source)">CAM: SIM</button>
+        <button id="camEspBtn" type="button" class="btn-tech mono" title="Switch to ESP32CameraSource (/api/camera_source; requires MarkerCalibration)">CAM: ESP32_CAM</button>
       </div>
 
-      <!-- Camera Source Switcher: SIM vs ESP32_CAM -->
-      <div class="flex items-center bg-[#08090a] border border-[#232830] p-0.5" role="group" aria-label="Camera Source">
-        <button id="camSimBtn" type="button" class="btn-tech btn-tech-active mono" title="Simulation Pinhole Camera (640x480, 35° Tilt)">CAM: SIM</button>
-        <button id="camEspBtn" type="button" class="btn-tech mono" title="Physical ESP32-CAM HTTP /capture Endpoint">CAM: ESP32_CAM</button>
+      <div class="badge mono">
+        SIM_T: <span id="simClockDisplay">0.100s</span> / STEPS: <span id="simStepsDisplay">50</span>
       </div>
 
-      <!-- Sim Clock & Step Counters -->
-      <div class="mono text-[11px] bg-[#15181d] border border-[#232830] px-2.5 py-1 text-[#d1d5db]">
-        SIM_T: <span id="simClockDisplay" class="font-semibold text-white">0.100s</span>
-        <span class="text-[#646d7a] mx-1">/</span>
-        STEPS: <span id="simStepsDisplay">50</span>
-        <span id="simPauseTag" class="ml-1.5 text-[10px] px-1 bg-[#232830] text-[#f59e0b]">PAUSED</span>
-      </div>
-
-      <!-- First-Class E-STOP Button (D18 / C39) -->
-      <button id="estopBtn" type="button" class="btn-estop mono" title="First-class E-Stop: Hold Last Pose Immediately (Key: E)">
+      <!-- First-Class E-STOP Button: always enabled and visually dominant (D18 / C39 / F4.7) -->
+      <button id="estopBtn" type="button" class="btn-estop mono" title="Immediate E-Stop interrupt (/api/estop, Key: E)">
         E-STOP [HOLD]
       </button>
     </div>
   </header>
 
   <!-- MAIN 3-COLUMN OPERATOR WORKSPACE -->
-  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2 p-2 bg-[#08090a]">
+  <main class="workspace-grid">
 
-    <!-- LEFT COLUMN (3 COLS): TASK CHAT & PLANNER / WORKER CONSOLE -->
-    <section class="lg:col-span-3 flex flex-col gap-2 min-h-[540px]">
-      <!-- Task Presets & Seed Selector -->
+    <!-- LEFT COLUMN: SCENE RESET, TASK PROMPT, PLAN APPROVAL & EXECUTION -->
+    <section class="col-stack">
       <div class="panel">
         <div class="panel-header">
-          <span>TASK & SCENE CONFIGURATION</span>
-          <span class="mono text-[10px] text-[#646d7a]">C22 / D10</span>
+          <span>SCENE &amp; EPISODE RESET</span>
+          <span class="mono">POST /api/reset</span>
         </div>
-        <div class="p-2.5 flex flex-col gap-2">
-          <div class="grid grid-cols-2 gap-1.5">
+        <div class="panel-body">
+          <div class="grid-2">
             <div>
-              <label for="taskSelect" class="block text-[10px] uppercase tracking-wider text-[#9ca3af] mb-1">Task Suite</label>
-              <select id="taskSelect" class="w-full bg-[#15181d] border border-[#323944] text-[#e5e7eb] text-xs px-2 py-1 mono focus:outline-none">
-                <option value="L1">L1: Pick & Lift Red Block</option>
-                <option value="L2">L2: Sort Red Block -> Bin</option>
+              <label for="taskSelect" class="field-label">Task Suite</label>
+              <select id="taskSelect" class="select-ctrl mono">
+                <option value="L1">L1: Pick &amp; Lift Red Block</option>
+                <option value="L2">L2: Sort Red Block -&gt; Bin</option>
               </select>
             </div>
             <div>
-              <label for="seedSelect" class="block text-[10px] uppercase tracking-wider text-[#9ca3af] mb-1">Paired Seed (0–29)</label>
-              <div class="flex gap-1">
-                <input id="seedSelect" type="number" min="0" max="29" value="0" class="w-full bg-[#15181d] border border-[#323944] text-[#e5e7eb] text-xs px-2 py-1 mono focus:outline-none" />
-                <button id="resetSceneBtn" type="button" class="btn-tech mono" title="Reset Sim & Respawn Seeded Scene">RESET</button>
+              <label for="seedSelect" class="field-label">Paired Seed (0-29)</label>
+              <div class="row-wrap" style="flex-wrap:nowrap;">
+                <input id="seedSelect" type="number" min="0" max="29" value="0" class="input-ctrl mono" />
+                <button id="resetSceneBtn" type="button" class="btn-tech mono" title="POST /api/reset">RESET</button>
               </div>
             </div>
           </div>
-
-          <div class="grid grid-cols-2 gap-1.5">
-            <div>
-              <label for="heightTierSelect" class="block text-[10px] uppercase tracking-wider text-[#9ca3af] mb-1">Z Height Tier (D6)</label>
-              <select id="heightTierSelect" class="w-full bg-[#15181d] border border-[#323944] text-[#e5e7eb] text-xs px-2 py-1 mono focus:outline-none">
-                <option value="probe">Tier P: Jaw Probe (Measure)</option>
-                <option value="prior">Tier C: Class Prior (0.040m)</option>
-                <option value="vp">Tier V: Silhouette VP (Disabled)</option>
-              </select>
-            </div>
-            <div>
-              <label for="llmProfileSelect" class="block text-[10px] uppercase tracking-wider text-[#9ca3af] mb-1">Agent Profile (C29)</label>
-              <select id="llmProfileSelect" class="w-full bg-[#15181d] border border-[#323944] text-[#e5e7eb] text-xs px-2 py-1 mono focus:outline-none">
-                <option value="scripted">scripted (Reference Ceiling)</option>
-                <option value="openrouter">openrouter (Tool-Schema)</option>
-                <option value="lmstudio">lmstudio (Local Tool-Schema)</option>
-              </select>
-            </div>
+          <div>
+            <label for="calibrationFileInput" class="field-label">ESP32 MarkerCalibration File (F3)</label>
+            <input id="calibrationFileInput" type="text" placeholder="Optional path to marker calibration YAML for esp32_cam" class="input-ctrl mono" />
           </div>
         </div>
       </div>
 
-      <!-- Operator Chat & Planner/Worker Dialogue Stream -->
-      <div class="panel flex-1 flex flex-col min-h-[260px]">
+      <div class="panel panel-fill">
         <div class="panel-header">
-          <span>OPERATOR // PLANNER // WORKER CHAT</span>
-          <span id="turnCounterBadge" class="mono text-[10px] text-[#9ca3af]">TURN 0 / 8</span>
+          <span>OPERATOR // PLANNER // WORKER LOG</span>
+          <span id="turnCounterBadge" class="mono">TURN 0</span>
         </div>
-        <div id="chatStream" class="flex-1 p-2.5 overflow-y-auto space-y-2 max-h-[310px] bg-[#08090a]">
-          <!-- Populated dynamically by JS -->
-        </div>
-
-        <!-- Chat Input Form -->
-        <form id="chatForm" class="border-t border-[#232830] p-2 bg-[#0f1114] flex flex-col gap-1.5">
-          <div class="flex gap-1.5">
+        <div id="chatStream" class="scroll-box mono"></div>
+        <form id="chatForm" class="panel-body" style="border-top:1px solid var(--border-hairline);">
+          <div class="row-wrap" style="flex-wrap:nowrap;">
             <input
               id="chatInput"
               type="text"
               value="Pick up the red block and lift it off the table."
-              placeholder="Enter natural-language task (e.g., Pick up the red block and place it in the bin)..."
-              class="flex-1 bg-[#15181d] border border-[#323944] text-[#e5e7eb] text-xs px-2.5 py-1.5 focus:outline-none focus:border-[#9ca3af]"
+              placeholder="Enter task instruction for TaskPlanner (T40 scene-validated)..."
+              class="input-ctrl"
             />
-            <button id="sendTaskBtn" type="submit" class="btn-tech mono font-semibold">PLAN</button>
-          </div>
-          <div class="flex items-center justify-between text-[10px] text-[#646d7a] mono">
-            <span>I1 ENFORCED: NO COORDINATES IN LLM SCHEMA</span>
-            <button id="injectCoordViolationBtn" type="button" class="underline text-[#9ca3af] hover:text-white" title="Test I1 Guardrail by Injecting a Raw Coordinate Tool Call">
-              Test I1 Violation
-            </button>
+            <button id="sendTaskBtn" type="submit" class="btn-tech mono" title="POST /api/task">PLAN</button>
           </div>
         </form>
       </div>
 
-      <!-- Approved Plan Tree & Execution Controls -->
       <div class="panel">
         <div class="panel-header">
           <span>SKILL PLAN TREE (D11 APPROVAL GATE)</span>
-          <span id="planApprovalStatus" class="mono text-[10px] text-[#f59e0b]">AWAITING APPROVAL</span>
+          <span id="planApprovalStatus" class="mono" style="color:var(--status-amber);">AWAITING APPROVAL</span>
         </div>
-        <div class="p-2.5 flex flex-col gap-2">
-          <div id="planListContainer" class="space-y-1 mono text-xs max-h-[150px] overflow-y-auto">
-            <!-- Populated dynamically -->
-          </div>
-          <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-[#232830]">
-            <button id="approvePlanBtn" type="button" class="btn-tech mono font-semibold text-[#10b981] border-[#10b981]">
+        <div class="panel-body">
+          <div id="planListContainer" class="col-stack mono"></div>
+          <div class="grid-3">
+            <button id="approvePlanBtn" type="button" class="btn-tech btn-approve mono" title="Approve plan for execution (POST /api/approve, Key: P)">
               APPROVE [P]
             </button>
-            <button id="stepSkillBtn" type="button" class="btn-tech mono">
-              STEP 1 SKILL [S]
+            <button id="stepSkillBtn" type="button" class="btn-tech mono" disabled title="Approve the skill plan first (D11)">
+              STEP 1 [S]
             </button>
-            <button id="runLoopBtn" type="button" class="btn-tech mono">
-              AUTO RUN
+            <button id="runLoopBtn" type="button" class="btn-tech mono" disabled title="Approve the skill plan first (D11)">
+              RUN ALL
             </button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CENTER COLUMN (6 COLS): DUAL VIEWPORTS (3D SIM + CAMERA FEED) & TRACKER TABLE -->
-    <section class="lg:col-span-6 flex flex-col gap-2">
-      <!-- Dual Viewport Grid: 5-DOF Simulator & Active Camera Input (SIM vs ESP32-CAM) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-
-        <!-- Viewport A: 5-DOF Robot ArmKinematic & Workspace Simulation -->
-        <div class="panel flex flex-col">
+    <!-- CENTER COLUMN: DUAL VIEWPORTS (DRAWN FROM PYTHON API DATA) & TRACKER TABLE -->
+    <section class="col-stack">
+      <div class="grid-2">
+        <div class="panel">
           <div class="panel-header">
-            <span>VIEWPORT A // 5-DOF KINEMATIC & WORKSPACE SIM</span>
-            <div class="flex items-center gap-1">
-              <button id="simViewIsoBtn" type="button" class="px-1.5 py-0.5 text-[10px] mono bg-[#232830] text-white">ISO 3D</button>
-              <button id="simViewSideBtn" type="button" class="px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]">SIDE Z-R</button>
-              <button id="simViewTopBtn" type="button" class="px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]">TOP X-Y</button>
+            <span>VIEWPORT A // 5-DOF SIM STATE (/api/state)</span>
+            <div class="row-wrap">
+              <button id="simViewIsoBtn" type="button" class="btn-tech btn-tech-active mono">ISO</button>
+              <button id="simViewSideBtn" type="button" class="btn-tech mono">SIDE</button>
+              <button id="simViewTopBtn" type="button" class="btn-tech mono">TOP</button>
             </div>
           </div>
-          <div class="relative bg-[#08090a] aspect-[4/3] w-full overflow-hidden">
-            <canvas id="simCanvas" width="640" height="480" class="w-full h-full block"></canvas>
-            <div class="absolute top-2 left-2 mono text-[10px] bg-[#0f1114]/90 border border-[#232830] px-2 py-1 text-[#9ca3af] space-y-0.5 pointer-events-none">
-              <div>CHAIN: <span class="text-[#e5e7eb]">yaw -> sh_p -> el_p -> wr_p -> wr_yaw</span></div>
-              <div>TCP (m): <span id="tcpPoseOverlay" class="text-white">x=+0.000 y=+0.200 z=+0.120</span></div>
-              <div>JAW AZIMUTH: <span id="jawAzimuthOverlay" class="text-white">0.0°</span> · OPEN: <span id="jawOpeningOverlay" class="text-white">45.0mm</span></div>
+          <div class="viewport-box">
+            <canvas id="simCanvas" width="640" height="480" class="viewport-canvas"></canvas>
+            <div class="viewport-overlay mono">
+              <div>TCP (m): <span id="tcpPoseOverlay">x=+0.000 y=+0.200 z=+0.120</span></div>
+              <div>JAW AZ: <span id="jawAzimuthOverlay">0.0 deg</span> | OPEN: <span id="jawOpeningOverlay">70.0 mm</span></div>
             </div>
           </div>
         </div>
 
-        <!-- Viewport B: Camera Input Feed (SIM Camera vs ESP32-CAM HTTP /capture) -->
-        <div class="panel flex flex-col">
+        <div class="panel">
           <div class="panel-header">
-            <span id="camViewportTitle">VIEWPORT B // CAMERA INPUT [SIM_CAM 640x480]</span>
-            <span id="camD2Badge" class="mono text-[10px] text-[#10b981]">D/2 CORR: +20.0mm</span>
+            <span id="camViewportTitle">VIEWPORT B // CAMERA FRAME (/api/frame.jpg)</span>
+            <button id="refreshFrameBtn" type="button" class="btn-tech mono" title="Reload /api/frame.jpg">REFRESH</button>
           </div>
-          <div class="relative bg-[#08090a] aspect-[4/3] w-full overflow-hidden">
-            <canvas id="camCanvas" width="640" height="480" class="w-full h-full block"></canvas>
-            <div class="absolute top-2 left-2 mono text-[10px] bg-[#0f1114]/90 border border-[#232830] px-2 py-1 text-[#9ca3af] space-y-0.5 pointer-events-none">
-              <div>POSE: <span class="text-[#e5e7eb]">(0, -0.185, 0.55)m -> (0, 0.20, 0)m</span></div>
-              <div>TILT: <span class="text-white">35.0°</span> · HFOV: <span class="text-white">60.0°</span></div>
-              <div>SOURCE: <span id="camSourceOverlay" class="text-[#10b981]">SimCameraSource (Paused Frame)</span></div>
-            </div>
-          </div>
-          <!-- ESP32-CAM Endpoint & Overlay Controls Bar -->
-          <div class="border-t border-[#232830] p-2 bg-[#0f1114] flex flex-wrap items-center justify-between gap-2 text-[11px]">
-            <div class="flex items-center gap-1.5 flex-1 min-w-[200px]">
-              <span class="mono text-[#9ca3af]">BOARD_IP:</span>
-              <input
-                id="espEndpointInput"
-                type="text"
-                value="192.168.1.50"
-                placeholder="192.168.1.50"
-                class="bg-[#15181d] border border-[#323944] text-[#e5e7eb] px-2 py-0.5 mono text-[11px] w-32 focus:outline-none"
-              />
-              <button id="captureFrameBtn" type="button" class="btn-tech mono" title="Trigger Immediate Frame Capture & Detection">
-                CAPTURE /cap
-              </button>
-            </div>
-            <div class="flex items-center gap-2 mono text-[10px] text-[#9ca3af]">
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input id="toggleD2Checkbox" type="checkbox" checked class="accent-[#e5e7eb]" />
-                <span>D/2 Vector</span>
-              </label>
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input id="toggleHomographyGridCheckbox" type="checkbox" checked class="accent-[#e5e7eb]" />
-                <span>Disk Mask</span>
-              </label>
+          <div class="viewport-box">
+            <canvas id="camCanvas" width="640" height="480" class="viewport-canvas"></canvas>
+            <div class="viewport-overlay mono">
+              <div>SOURCE: <span id="camSourceOverlay">sim</span></div>
+              <div>MODE: <span id="execModeOverlay">sim</span></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Persistent Object Identity Tracker & Height Estimation Table (C14 / C15 / C16) -->
       <div class="panel">
         <div class="panel-header">
-          <span>PERSISTENT OBJECT TRACKER (IoU + CENTROID) & D/2 CONTACT CORRECTION</span>
-          <span class="mono text-[10px] text-[#646d7a]">C13 · C14 · C15 · C16</span>
+          <span>PERSISTENT OBJECT TRACKER (FROM PYTHON /api/state)</span>
+          <span class="mono">C13 · C14 · C15 · C16</span>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse mono text-[11px]">
+        <div style="overflow-x:auto;">
+          <table class="data-table mono">
             <thead>
-              <tr class="border-b border-[#232830] bg-[#15181d] text-[#9ca3af]">
-                <th class="py-1.5 px-2.5">TRACK_ID</th>
-                <th class="py-1.5 px-2.5">VOCAB LABEL</th>
-                <th class="py-1.5 px-2.5">STATUS</th>
-                <th class="py-1.5 px-2.5">BBOX BOTTOM (px)</th>
-                <th class="py-1.5 px-2.5">RAW XY (m)</th>
-                <th class="py-1.5 px-2.5">D/2 CORRECTED XY (m)</th>
-                <th class="py-1.5 px-2.5">HEIGHT Z (SOURCE)</th>
-                <th class="py-1.5 px-2.5">ERR (mm)</th>
+              <tr>
+                <th>TRACK_ID</th>
+                <th>LABEL</th>
+                <th>STATUS</th>
+                <th>BOTTOM (px)</th>
+                <th>RAW XY (m)</th>
+                <th>D/2 CORR XY (m)</th>
+                <th>HEIGHT Z (SOURCE)</th>
               </tr>
             </thead>
-            <tbody id="trackerTableBody" class="divide-y divide-[#232830]">
-              <!-- Populated dynamically -->
-            </tbody>
+            <tbody id="trackerTableBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Episode Action-Log Transcript & SHA-256 Reproducibility Verifier (C27 / C38) -->
-      <div class="panel flex-1 flex flex-col">
+      <div class="panel panel-fill">
         <div class="panel-header">
-          <span>EPISODE ACTION-LOG TRANSCRIPT (JSONL) & SHA-256 REPLAY VERIFIER</span>
-          <div class="flex items-center gap-2">
-            <span class="mono text-[10px] text-[#9ca3af]">SHA-256: <span id="actionHashDisplay" class="text-[#e5e7eb]">e3b0c44298fc1c14...</span></span>
-            <button id="verifyReplayBtn" type="button" class="px-2 py-0.5 bg-[#15181d] border border-[#323944] text-[10px] mono text-[#e5e7eb] hover:bg-[#1c2027]">
-              VERIFY HASH
-            </button>
-            <button id="tamperTestBtn" type="button" class="px-2 py-0.5 bg-[#15181d] border border-[#323944] text-[10px] mono text-[#f59e0b] hover:bg-[#1c2027]" title="Simulate Tampered Transcript to Test T51 Detection">
-              TEST TAMPER [T51]
-            </button>
-          </div>
+          <span>EPISODE ACTION-LOG TRANSCRIPT &amp; SHA-256 (replay.py)</span>
+          <span class="mono">SHA-256: <span id="actionHashDisplay">...</span></span>
         </div>
-        <div id="transcriptContainer" class="p-2 mono text-[11px] bg-[#08090a] overflow-y-auto max-h-[135px] space-y-1">
-          <!-- Populated dynamically -->
-        </div>
+        <div id="transcriptContainer" class="scroll-box mono"></div>
       </div>
     </section>
 
-    <!-- RIGHT COLUMN (3 COLS): 5-DOF JOINT TELEMETRY, SAFETY SUPERVISOR, FIRMWARE NDJSON & GATES -->
-    <section class="lg:col-span-3 flex flex-col gap-2">
-
-      <!-- 5-DOF Joint Angles, Provenance & Trapezoidal Trajectory Jogger (C06 / C07 / C08) -->
+    <!-- RIGHT COLUMN: JOINT TELEMETRY, SAFETY OUTCOMES, NDJSON LOG -->
+    <section class="col-stack">
       <div class="panel">
         <div class="panel-header">
-          <span>5-DOF JOINT STATE & PROVENANCE</span>
-          <button id="homeArmBtn" type="button" class="px-2 py-0.5 bg-[#15181d] border border-[#323944] text-[10px] mono text-[#e5e7eb] hover:bg-[#1c2027]">
-            HOME POSE
-          </button>
+          <span>5-DOF JOINT TELEMETRY (/api/config &amp; /api/state)</span>
+          <span id="robotNameBadge" class="mono">irobots_arm_5dof</span>
         </div>
-        <div id="jointsContainer" class="p-2.5 space-y-2">
-          <!-- Populated dynamically -->
-        </div>
+        <div id="jointsContainer" class="panel-body mono"></div>
       </div>
 
-      <!-- Safety Supervisor & Outcome Predicates (C09 / C17 / I5) -->
       <div class="panel">
         <div class="panel-header">
-          <span>SAFETY SUPERVISOR & OUTCOMES (I2 / I5)</span>
-          <span class="mono text-[10px] text-[#646d7a]">PURE FN</span>
+          <span>SAFETY SUPERVISOR &amp; OUTCOMES (I2 / I5)</span>
+          <span id="failureModeBadge" class="mono">failure_mode: none</span>
         </div>
-        <div class="p-2.5 space-y-2 mono text-[11px]">
-          <div class="grid grid-cols-2 gap-1.5">
-            <div class="bg-[#15181d] border border-[#232830] p-1.5">
-              <div class="text-[10px] text-[#9ca3af]">PRIVILEGED SUCCESS (I5)</div>
-              <div id="metricPrivSuccess" class="text-xs font-bold text-[#9ca3af] mt-0.5">PENDING</div>
+        <div class="panel-body mono">
+          <div class="grid-2">
+            <div class="pred-item">
+              <span>PRIVILEGED (I5):</span>
+              <span id="metricPrivSuccess">PENDING</span>
             </div>
-            <div class="bg-[#15181d] border border-[#232830] p-1.5">
-              <div class="text-[10px] text-[#9ca3af]">PERCEIVED SUCCESS (I5)</div>
-              <div id="metricPercSuccess" class="text-xs font-bold text-[#9ca3af] mt-0.5">PENDING</div>
-            </div>
-          </div>
-
-          <div id="predicateGrid" class="grid grid-cols-2 gap-1 text-[10px]">
-            <!-- Outcome predicates populated by JS -->
-          </div>
-
-          <div class="pt-1 border-t border-[#232830] flex items-center justify-between text-[10px] text-[#9ca3af]">
-            <span>TEST SUPERVISOR REJECTION:</span>
-            <div class="flex gap-1">
-              <button id="testTableHitBtn" type="button" class="btn-tech py-0.5 px-1.5 text-[10px]" title="Command z=-0.010m to Verify T08 Table Plane Rejection">
-                Z &lt; 0m [T08]
-              </button>
-              <button id="testOutBoundsBtn" type="button" class="btn-tech py-0.5 px-1.5 text-[10px]" title="Command r=0.25m to Verify T07 Workspace Disk Rejection">
-                R &gt; 0.10m [T07]
-              </button>
+            <div class="pred-item">
+              <span>PERCEIVED (I5):</span>
+              <span id="metricPercSuccess">PENDING</span>
             </div>
           </div>
+          <div id="safetyRejectionOutcome" class="badge badge-ok">
+            LAST SAFETY VERDICT: ok (approved)
+          </div>
+          <div id="predicateGrid" class="grid-2"></div>
         </div>
       </div>
 
-      <!-- ESP32 Arm Firmware NDJSON Wire Protocol Monitor (C48 / C50 / C51) -->
-      <div class="panel flex-1 flex flex-col">
+      <div class="panel panel-fill">
         <div class="panel-header">
-          <span>ESP32 ARM NDJSON PROTOCOL (TCP:9000)</span>
-          <span id="fwStateBadge" class="mono text-[10px] text-[#10b981]">STATE: ACTIVE</span>
+          <span>ESP32 ARM NDJSON PROTOCOL LOG</span>
+          <span id="fwStateBadge" class="mono">STATE: ACTIVE</span>
         </div>
-        <div id="ndjsonLog" class="p-2 mono text-[10px] bg-[#08090a] flex-1 overflow-y-auto max-h-[120px] space-y-1 text-[#9ca3af]">
-          <!-- Populated dynamically -->
-        </div>
+        <div id="ndjsonLog" class="scroll-box mono"></div>
       </div>
-
-      <!-- Research Gates & RQ0–RQ3 Evidence Drawer (runs/ JSON) -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>HEADLINE GATES (FROM runs/*.json)</span>
-          <span class="mono text-[10px] text-[#10b981]">ALL PASS</span>
-        </div>
-        <div class="p-2 mono text-[10px] space-y-1 text-[#d1d5db]">
-          <div class="flex justify-between"><span>C01 / SC3 Grasp (@ μ=0.5):</span><span class="text-[#10b981] font-semibold">100.0% (50/50, 1.7mm slip)</span></div>
-          <div class="flex justify-between"><span>C01c FK vs MuJoCo Sim:</span><span class="text-[#10b981] font-semibold">0.0000 μm (300 poses)</span></div>
-          <div class="flex justify-between"><span>C02 / SC2 Perception (p95 XY):</span><span class="text-[#10b981] font-semibold">100.0% det · 7.0mm (≤8mm)</span></div>
-          <div class="flex justify-between"><span>SC1 Scripted L1 Ceiling:</span><span class="text-[#10b981] font-semibold">100.0% (30/30 seeds)</span></div>
-          <div class="flex justify-between"><span>RQ1 Skills vs Raw (σ=4mm):</span><span class="text-[#10b981] font-semibold">100.0% vs 60.0% (p=0.0005)</span></div>
-          <div class="flex justify-between"><span>RQ2 Probe vs Prior |Ĥ-H|:</span><span class="text-[#10b981] font-semibold">1.00mm vs 25.00mm</span></div>
-          <div class="flex justify-between"><span>SC4 Unattended Reliability:</span><span class="text-[#10b981] font-semibold">150/150 eps · 0 hangs</span></div>
-        </div>
-      </div>
-
     </section>
+
   </main>
 
   <script>
-    // =========================================================================
-    // IRobots v2 — Exact Kinematic, Perception, Safety & Closed-Loop Engine
-    // Matches config/robot.yaml, config/scene.yaml, config/perception.yaml
-    // =========================================================================
-
-    const ROBOT_SPEC = {
-      name: "irobots_arm_5dof",
-      links: {
-        base_height: { value: 0.050, provenance: "measured" },
-        upper_arm: { value: 0.194, provenance: "measured" },
-        fore_arm: { value: 0.130, provenance: "measured" },
-        wrist_post: { value: 0.034, provenance: "measured" },
-        gripper_link: { value: 0.039, provenance: "measured" },
-        grip_thickness: { value: 0.0085, provenance: "measured" }
-      },
-      joints: {
-        base_yaw:       { min_deg: -170, max_deg: 170, max_v: 2.6, max_a: 6.0, ch: 0, provenance: "design" },
-        shoulder_pitch: { min_deg: -20,  max_deg: 95,  max_v: 2.0, max_a: 5.0, ch: 1, provenance: "design" },
-        elbow_pitch:    { min_deg: -160, max_deg: 160, max_v: 2.2, max_a: 5.0, ch: 2, provenance: "design" },
-        wrist_pitch:    { min_deg: -150, max_deg: 150, max_v: 2.5, max_a: 6.0, ch: 4, provenance: "design" },
-        wrist_yaw:      { min_deg: -170, max_deg: 170, max_v: 3.0, max_a: 8.0, ch: 3, provenance: "design" }
-      },
-      gripper: { min_m: 0.008, max_m: 0.070, ch: 5, provenance: "design" },
-      safety: {
-        workspace_centre: [0.0, 0.20],
-        workspace_radius: 0.10,
-        z_min: 0.0,
-        z_max: 0.30,
-        table_plane_z: 0.0,
-        table_clearance: 0.002,
-        self_collision_radius: 0.06
-      },
-      home_pose: {
-        base_yaw: 0.0,
-        shoulder_pitch: 0.0,
-        elbow_pitch: 1.2,
-        wrist_pitch: 0.6,
-        wrist_yaw: 0.0,
-        gripper: 0.045
-      }
+    // Thin-client UI state: Python (/api/config, /api/state, /api/frame.jpg) is the sole authority.
+    const ui = {
+      connected: false,
+      simViewMode: "ISO",
+      config: null,
+      state: null,
+      frameImg: new Image(),
+      frameLoaded: false,
+      pollTimer: null
     };
 
-    const CAMERA_SPEC = {
-      position: [0.0, -0.185, 0.55],
-      target: [0.0, 0.20, 0.0],
-      hfov_deg: 60.0,
-      width: 640,
-      height: 480
-    };
+    ui.frameImg.addEventListener("load", () => {
+      ui.frameLoaded = true;
+      drawCameraCanvas();
+    });
 
-    // Deterministic PRNG (Mulberry32) so each seed 0..29 produces reproducible scenes
-    function makeRng(seed) {
-      let a = (seed + 0x6D2B79F5) | 0;
-      return function() {
-        a = Math.imul(a ^ (a >>> 15), 1 | a);
-        a = (a + Math.imul(a ^ (a >>> 7), 61 | a)) ^ a;
-        return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
-      };
-    }
-
-    // Forward Kinematics: returns shoulder, elbow, wrist, tip, and closing azimuth
-    function forwardKinematics(pose) {
-      const l1 = ROBOT_SPEC.links.upper_arm.value;
-      const l2 = ROBOT_SPEC.links.fore_arm.value;
-      const l34 = ROBOT_SPEC.links.wrist_post.value + ROBOT_SPEC.links.gripper_link.value;
-      const bh = ROBOT_SPEC.links.base_height.value;
-
-      const psi_b = pose.base_yaw;
-      const phi1 = pose.shoulder_pitch;
-      const phi2 = phi1 + pose.elbow_pitch;
-      const phi3 = phi2 + pose.wrist_pitch;
-
-      const cb = Math.cos(psi_b), sb = Math.sin(psi_b);
-      const shoulder = [0, 0, bh];
-      const r1 = l1 * Math.cos(phi1), z1 = l1 * Math.sin(phi1);
-      const elbow = [cb * r1, sb * r1, bh + z1];
-
-      const r2 = r1 + l2 * Math.cos(phi2), z2 = z1 + l2 * Math.sin(phi2);
-      const wrist = [cb * r2, sb * r2, bh + z2];
-
-      const r3 = r2 + l34 * Math.cos(phi3), z3 = z2 + l34 * Math.sin(phi3);
-      const tip = [cb * r3, sb * r3, bh + z3];
-
-      const closingAzimuth = psi_b + Math.PI / 2 + pose.wrist_yaw;
-      return { shoulder, elbow, wrist, tip, closingAzimuth };
-    }
-
-    // Analytic Inverse Kinematics (matches irobots_core/kinematics.py)
-    function inverseKinematics(targetXyz, closingAzimuth = 0.0) {
-      const [tx, ty, tz] = targetXyz;
-      if (!Number.isFinite(tx) || !Number.isFinite(ty) || !Number.isFinite(tz)) {
-        return { ok: false, status: "unreachable", reason: "non_finite" };
-      }
-      const r = Math.hypot(tx, ty);
-      if (r < 1e-6) {
-        return { ok: false, status: "singular", reason: "target on base axis" };
-      }
-      const psi_b = Math.atan2(ty, tx);
-      const l1 = ROBOT_SPEC.links.upper_arm.value;
-      const l2 = ROBOT_SPEC.links.fore_arm.value;
-      const l34 = ROBOT_SPEC.links.wrist_post.value + ROBOT_SPEC.links.gripper_link.value;
-      const bh = ROBOT_SPEC.links.base_height.value;
-
-      // Downward tool approach: phi3 = -pi/2
-      const phi3 = -Math.PI / 2;
-      const wr = r;
-      const wh = (tz - bh) + l34;
-      const d2 = wr * wr + wh * wh;
-      const d = Math.sqrt(d2);
-      if (d > l1 + l2 || d < Math.abs(l1 - l2)) {
-        return { ok: false, status: "unreachable", reason: `shoulder dist ${d.toFixed(3)}m out of reach` };
-      }
-      let cosE = (d2 - l1 * l1 - l2 * l2) / (2 * l1 * l2);
-      cosE = Math.max(-1, Math.min(1, cosE));
-      const baseE = Math.acos(cosE);
-
-      const branches = [baseE, -baseE];
-      let bestPose = null;
-      let bestElbowZ = -1e9;
-
-      for (const te of branches) {
-        const phi1 = Math.atan2(wh, wr) - Math.atan2(l2 * Math.sin(te), l1 + l2 * Math.cos(te));
-        const phi2 = phi1 + te;
-        const ts = phi1;
-        const twp = phi3 - phi2;
-        let twy = closingAzimuth - (psi_b + Math.PI / 2);
-        while (twy > Math.PI) twy -= 2 * Math.PI;
-        while (twy < -Math.PI) twy += 2 * Math.PI;
-
-        const candidate = {
-          base_yaw: psi_b,
-          shoulder_pitch: ts,
-          elbow_pitch: te,
-          wrist_pitch: twp,
-          wrist_yaw: twy
-        };
-        let valid = true;
-        for (const [jname, angle] of Object.entries(candidate)) {
-          const spec = ROBOT_SPEC.joints[jname];
-          const deg = angle * 180 / Math.PI;
-          if (deg < spec.min_deg - 1e-4 || deg > spec.max_deg + 1e-4) {
-            valid = false;
-            break;
-          }
-        }
-        const elbowZ = bh + l1 * Math.sin(phi1);
-        if (valid && elbowZ > bestElbowZ) {
-          bestElbowZ = elbowZ;
-          bestPose = candidate;
-        }
-      }
-
-      if (!bestPose) {
-        return { ok: false, status: "joint_limit", reason: "joint limit exceeded on all branches" };
-      }
-      return { ok: true, status: "reachable", pose: bestPose };
-    }
-
-    // Pure Safety Supervisor (matches irobots_core/safety.py, Invariant I2)
-    function checkSafety(pose, opening, enforceWorkspace = true) {
-      for (const [jname, spec] of Object.entries(ROBOT_SPEC.joints)) {
-        const val = pose[jname];
-        if (!Number.isFinite(val)) {
-          return { approved: false, reason: "non_finite", detail: `${jname} is non-finite` };
-        }
-        const deg = val * 180 / Math.PI;
-        if (deg < spec.min_deg - 1e-4 || deg > spec.max_deg + 1e-4) {
-          return { approved: false, reason: "joint_limit", detail: `${jname}=${deg.toFixed(1)}° outside [${spec.min_deg}°, ${spec.max_deg}°]` };
-        }
-      }
-      if (opening < ROBOT_SPEC.gripper.min_m - 1e-5 || opening > ROBOT_SPEC.gripper.max_m + 1e-5) {
-        return { approved: false, reason: "gripper_limit", detail: `opening ${(opening*1000).toFixed(1)}mm outside [8, 70]mm` };
-      }
-
-      const fk = forwardKinematics(pose);
-      const minZ = ROBOT_SPEC.safety.table_plane_z + ROBOT_SPEC.safety.table_clearance;
-      for (const [label, pt] of [["elbow", fk.elbow], ["wrist", fk.wrist], ["tip", fk.tip]]) {
-        if (pt[2] < minZ - 1e-6) {
-          return { approved: false, reason: "table_plane", detail: `${label} z=${(pt[2]*1000).toFixed(1)}mm < clearance 2.0mm` };
-        }
-      }
-
-      const rTip = Math.hypot(fk.tip[0], fk.tip[1]);
-      if (rTip < ROBOT_SPEC.safety.self_collision_radius) {
-        return { approved: false, reason: "self_collision", detail: `tip r=${(rTip*1000).toFixed(1)}mm inside 60mm base cylinder` };
-      }
-
-      if (enforceWorkspace) {
-        const [cx, cy] = ROBOT_SPEC.safety.workspace_centre;
-        const dist = Math.hypot(fk.tip[0] - cx, fk.tip[1] - cy);
-        if (dist > ROBOT_SPEC.safety.workspace_radius + 1e-4) {
-          return { approved: false, reason: "workspace_bounds", detail: `tip XY ${dist.toFixed(3)}m > 0.100m workspace disk` };
-        }
-        if (fk.tip[2] > ROBOT_SPEC.safety.z_max) {
-          return { approved: false, reason: "workspace_bounds", detail: `tip z=${fk.tip[2].toFixed(3)}m > 0.300m max height` };
-        }
-      }
-      return { approved: true, reason: "ok", detail: "approved" };
-    }
-
-    // Pinhole Camera Projection & Analytic Homography (matches irobots_core/perception/homography.py)
-    function buildCameraBasis() {
-      const pos = CAMERA_SPEC.position;
-      const tgt = CAMERA_SPEC.target;
-      let fx = tgt[0] - pos[0], fy = tgt[1] - pos[1], fz = tgt[2] - pos[2];
-      const fn = Math.hypot(fx, fy, fz);
-      fx /= fn; fy /= fn; fz /= fn;
-      const zx = -fx, zy = -fy, zz = -fz;
-      // x_axis = cross(forward, up=[0,0,1]) = (fy, -fx, 0)
-      let xx = fy, xy = -fx, xz = 0;
-      const xn = Math.hypot(xx, xy, xz);
-      xx /= xn; xy /= xn;
-      // y_axis = cross(z_axis, x_axis)
-      const yx = zy * xz - zz * xy;
-      const yy = zz * xx - zx * xz;
-      const yz = zx * xy - zy * xx;
-      const focal = (CAMERA_SPEC.width / 2) / Math.tan((CAMERA_SPEC.hfov_deg * Math.PI / 180) / 2);
-      return { pos, x: [xx, xy, xz], y: [yx, yy, yz], z: [zx, zy, zz], focal, cx: CAMERA_SPEC.width / 2, cy: CAMERA_SPEC.height / 2 };
-    }
-
-    const CAM_BASIS = buildCameraBasis();
-
-    function projectWorldToPixel(pt) {
-      const dx = pt[0] - CAM_BASIS.pos[0];
-      const dy = pt[1] - CAM_BASIS.pos[1];
-      const dz = pt[2] - CAM_BASIS.pos[2];
-      const camX = dx * CAM_BASIS.x[0] + dy * CAM_BASIS.x[1] + dz * CAM_BASIS.x[2];
-      const camY = dx * CAM_BASIS.y[0] + dy * CAM_BASIS.y[1] + dz * CAM_BASIS.y[2];
-      const camZ = dx * CAM_BASIS.z[0] + dy * CAM_BASIS.z[1] + dz * CAM_BASIS.z[2];
-      const depth = -camZ;
-      const u = CAM_BASIS.cx + CAM_BASIS.focal * (camX / depth);
-      const v = CAM_BASIS.cy - CAM_BASIS.focal * (camY / depth);
-      return [u, v];
-    }
-
-    function backProjectPixelToTableXY(u, v, tableZ = 0.0) {
-      const lx = (u - CAM_BASIS.cx) / CAM_BASIS.focal;
-      const ly = -(v - CAM_BASIS.cy) / CAM_BASIS.focal;
-      const lz = -1.0;
-      const rx = CAM_BASIS.x[0] * lx + CAM_BASIS.y[0] * ly + CAM_BASIS.z[0] * lz;
-      const ry = CAM_BASIS.x[1] * lx + CAM_BASIS.y[1] * ly + CAM_BASIS.z[1] * lz;
-      const rz = CAM_BASIS.x[2] * lx + CAM_BASIS.y[2] * ly + CAM_BASIS.z[2] * lz;
-      const t = (tableZ - CAM_BASIS.pos[2]) / rz;
-      return [CAM_BASIS.pos[0] + t * rx, CAM_BASIS.pos[1] + t * ry];
-    }
-
-    function contactCorrection(rawXy, footprintM = 0.040) {
-      const dx = CAM_BASIS.pos[0] - rawXy[0];
-      const dy = CAM_BASIS.pos[1] - rawXy[1];
-      const norm = Math.hypot(dx, dy);
-      if (norm < 1e-9) return [0, 0];
-      const ux = dx / norm, uy = dy / norm;
-      const theta = Math.atan2(uy, ux);
-      const halfExtent = 0.5 * footprintM * (Math.abs(Math.cos(theta)) + Math.abs(Math.sin(theta)));
-      return [-halfExtent * ux, -halfExtent * uy];
-    }
-
-    // Deterministic FNV-1a / SHA-like hex digest for episode action-log verification
-    function computeActionLogHash(records) {
-      const canonical = JSON.stringify(records.map(r => ({
-        turn_index: r.turn_index,
-        skill: r.skill,
-        target_id: r.target_id,
-        safety_approved: r.safety_approved,
-        outcome: r.outcome
-      })));
-      let h1 = 0xdeadbeef ^ canonical.length;
-      let h2 = 0x41c6ce57 ^ canonical.length;
-      for (let i = 0; i < canonical.length; i++) {
-        const ch = canonical.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-      }
-      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-      const p1 = (h1 >>> 0).toString(16).padStart(8, "0");
-      const p2 = (h2 >>> 0).toString(16).padStart(8, "0");
-      const p3 = ((h1 ^ h2) >>> 0).toString(16).padStart(8, "0");
-      const p4 = (Math.imul(h1, 31) >>> 0).toString(16).padStart(8, "0");
-      return `${p1}${p2}${p3}${p4}${p1}${p2}${p3}${p4}`;
-    }
-
-    // =========================================================================
-    // Application State
-    // =========================================================================
-    const state = {
-      mode: "PLAN",              // PLAN | RUN | STEP | REPLAY
-      cameraSource: "sim",       // sim | esp32_cam
-      simViewMode: "ISO",        // ISO | SIDE | TOP
-      taskLevel: "L1",
-      seed: 0,
-      heightTier: "probe",
-      llmProfile: "scripted",
-      estopped: false,
-      planApproved: false,
-      simSteps: 50,
-      simDt: 0.002,
-      simPaused: true,
-      safetyRejections: 0,
-      lastSafetyVerdict: { approved: true, reason: "ok", detail: "nominal" },
-      pose: { ...ROBOT_SPEC.home_pose },
-      objects: [],
-      tracks: [],
-      plan: [],
-      completedStepIndices: new Set(),
-      currentStepIdx: 0,
-      graspedObjectId: null,
-      transcript: [],
-      actionLogHash: "0000000000000000000000000000000000000000000000000000000000000000",
-      tampered: false,
-      predicates: {
-        gripper_at_pose: true,
-        object_moved_with_gripper: false,
-        object_lifted: false,
-        object_knocked_away: false,
-        no_target: false,
-        table_hit: false
-      },
-      fwSeq: 1,
-      autoRunTimer: null
-    };
-
-    // Spawn seeded scene objects (matches irobots_core/sim/scene_builder.py)
-    function spawnSeededScene(seed, level) {
-      const rng = makeRng(seed * 97 + (level === "L2" ? 500 : 0));
-      const [cx, cy] = ROBOT_SPEC.safety.workspace_centre;
-      const radius = ROBOT_SPEC.safety.workspace_radius * 0.75;
-      const placed = [];
-
-      function sampleXY(minSep = 0.062) {
-        for (let k = 0; k < 100; k++) {
-          const r = radius * Math.sqrt(rng());
-          const th = rng() * 2 * Math.PI;
-          const x = cx + r * Math.cos(th);
-          const y = cy + r * Math.sin(th);
-          if (placed.every(p => Math.hypot(x - p[0], y - p[1]) >= minSep)) {
-            placed.push([x, y]);
-            return [x, y];
-          }
-        }
-        return [cx, cy];
-      }
-
-      const [rx, ry] = sampleXY();
-      const objs = [
-        {
-          id: "red_block_1",
-          name: "red_block",
-          label: "red block",
-          color: "#d94040",
-          topColor: "#e65050",
-          size: [0.04, 0.04, 0.04],
-          pos: [rx, ry, 0.02],
-          isBin: false
-        }
-      ];
-
-      if (level === "L2") {
-        const [bx, by] = sampleXY();
-        objs.push({
-          id: "blue_block_2",
-          name: "blue_block",
-          label: "blue block",
-          color: "#3b6fd9",
-          topColor: "#4f83eb",
-          size: [0.04, 0.04, 0.04],
-          pos: [bx, by, 0.02],
-          isBin: false
-        });
-        const [binX, binY] = sampleXY(0.068);
-        objs.push({
-          id: "bin_3",
-          name: "bin",
-          label: "bin",
-          color: "#238845",
-          topColor: "#2ea355",
-          size: [0.08, 0.08, 0.004],
-          pos: [binX, binY, 0.002],
-          isBin: true
-        });
-      }
-      return objs;
-    }
-
-    // Run perception on current scene objects -> populate tracks with D/2 correction and height tier
-    function runPerceptionPass() {
-      const tracks = [];
-      for (const obj of state.objects) {
-        const halfD = obj.size[1] / 2;
-        const heightM = obj.size[2];
-        const frontBottomWorld = [obj.pos[0], obj.pos[1] - halfD, Math.max(0, obj.pos[2] - heightM / 2)];
-        const [bu, bv] = projectWorldToPixel(frontBottomWorld);
-
-        // Simulate 1.2mm sensor jitter when ESP32-CAM mode is active
-        const jitterX = state.cameraSource === "esp32_cam" ? 0.6 : 0.0;
-        const jitterY = state.cameraSource === "esp32_cam" ? -0.5 : 0.0;
-        const uDet = Math.round((bu + jitterX) * 2) / 2;
-        const vDet = Math.round(bv + jitterY);
-
-        const rawXy = backProjectPixelToTableXY(uDet, vDet, 0.0);
-        const [dx, dy] = contactCorrection(rawXy, obj.size[1]);
-        const corrXy = [rawXy[0] + dx, rawXy[1] + dy];
-
-        let estH = 0.040;
-        let hSource = "probe";
-        if (obj.isBin) {
-          estH = 0.004;
-          hSource = "prior";
-        } else if (state.heightTier === "probe") {
-          estH = heightM;
-          hSource = "probe (Tier P)";
-        } else if (state.heightTier === "prior") {
-          estH = 0.040;
-          hSource = "prior (Tier C)";
-        } else {
-          estH = +(heightM * 1.72).toFixed(3);
-          hSource = "VP (+72% bias)";
-        }
-
-        const errMm = Math.hypot(corrXy[0] - obj.pos[0], corrXy[1] - obj.pos[1]) * 1000;
-        tracks.push({
-          track_id: obj.id,
-          label: obj.label,
-          status: "CONFIRMED",
-          bottom_px: [uDet, vDet],
-          raw_xy: rawXy,
-          corr_xy: corrXy,
-          height_m: estH,
-          height_source: hSource,
-          err_mm: errMm,
-          true_pos: [...obj.pos],
-          size: [...obj.size],
-          isBin: obj.isBin
-        });
-      }
-      state.tracks = tracks;
-    }
-
-    // Build skill plan from natural-language instruction (Planner C31: no coordinates!)
-    function buildSkillPlanFromPrompt(promptText) {
-      const p = promptText.toLowerCase();
-      const targetTrack = p.includes("blue")
-        ? state.tracks.find(t => t.label.includes("blue"))
-        : state.tracks.find(t => t.label.includes("red")) || state.tracks[0];
-      const binTrack = state.tracks.find(t => t.isBin);
-
-      if (!targetTrack) {
-        appendChat("PLANNER", "PlanApprovalError: Target object not present in tracked scene IDs (T40).", "error");
-        return [];
-      }
-
-      const tid = targetTrack.track_id;
-      if ((p.includes("bin") || p.includes("sort") || p.includes("place")) && binTrack) {
-        return [
-          { skill: "move_above", target_id: tid, desc: `Hover above ${tid} (open=70mm)` },
-          { skill: "grasp",      target_id: tid, desc: `Descend & close jaws on ${tid}` },
-          { skill: "lift",       target_id: tid, desc: `Lift ${tid} to z=60mm clearance` },
-          { skill: "move_above", target_id: binTrack.track_id, desc: `Transport ${tid} above ${binTrack.track_id}` },
-          { skill: "release",    target_id: "",  desc: `Open jaws to release into ${binTrack.track_id}` },
-          { skill: "retreat",    target_id: "",  desc: `Retreat vertically clear of workspace` }
-        ];
-      }
-      return [
-        { skill: "move_above", target_id: tid, desc: `Hover above ${tid} (open=70mm)` },
-        { skill: "grasp",      target_id: tid, desc: `Descend & close jaws on ${tid}` },
-        { skill: "lift",       target_id: tid, desc: `Lift ${tid} to z=60mm clearance` }
-      ];
-    }
-
-    // Chat logger
-    function appendChat(role, text, tone = "normal") {
-      const stream = document.getElementById("chatStream");
-      const row = document.createElement("div");
-      let borderCol = "border-[#232830]";
-      let badgeCol = "bg-[#15181d] text-[#9ca3af]";
-      if (role === "OPERATOR") {
-        borderCol = "border-[#323944]";
-        badgeCol = "bg-[#232830] text-white";
-      } else if (tone === "success") {
-        borderCol = "border-[#10b981]/50";
-        badgeCol = "bg-[#0b221a] text-[#10b981]";
-      } else if (tone === "warn") {
-        borderCol = "border-[#f59e0b]/50";
-        badgeCol = "bg-[#291d0a] text-[#f59e0b]";
-      } else if (tone === "error") {
-        borderCol = "border-[#ef4444]/60";
-        badgeCol = "bg-[#290f12] text-[#ef4444]";
-      }
-      row.className = `border ${borderCol} bg-[#0f1114] p-2 text-xs`;
-      row.innerHTML = `
-        <div class="flex items-center justify-between mb-1">
-          <span class="mono text-[10px] font-semibold px-1.5 py-0.5 ${badgeCol}">${role}</span>
-          <span class="mono text-[10px] text-[#646d7a]">t=${(state.simSteps * state.simDt).toFixed(3)}s</span>
-        </div>
-        <div class="mono text-[11px] text-[#d1d5db] leading-relaxed break-words">${text}</div>
-      `;
-      stream.appendChild(row);
-      stream.scrollTop = stream.scrollHeight;
-    }
-
-    // Firmware NDJSON logger
-    function appendNdjsonLog(cmdObj, ackObj) {
-      const box = document.getElementById("ndjsonLog");
-      const item = document.createElement("div");
-      const okCol = ackObj.ok ? "text-[#10b981]" : "text-[#ef4444]";
-      item.innerHTML = `
-        <div class="text-[#9ca3af]">&gt; ${JSON.stringify(cmdObj)}</div>
-        <div class="${okCol}">&lt; ${JSON.stringify(ackObj)}</div>
-      `;
-      box.appendChild(item);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    // Execute exactly ONE skill per observation (Invariants I1, I2, I3, I6)
-    function executeNextSkillStep() {
-      if (state.estopped) {
-        appendChat("SAFETY", "Execution blocked: E-STOP is latched in HOLD_POSE (D18). Clear E-STOP first.", "error");
-        stopAutoRun();
-        return;
-      }
-      if (!state.planApproved) {
-        appendChat("SUPERVISOR", "D11 Gate: Approve the plan ([P] or APPROVE button) before executing skills.", "warn");
-        stopAutoRun();
-        return;
-      }
-      if (state.currentStepIdx >= state.plan.length) {
-        appendChat("LOOP", "All planned skills have completed for this episode.", "success");
-        stopAutoRun();
-        return;
-      }
-
-      // 1. Observe from active camera source while sim is paused (I6)
-      state.simPaused = true;
-      runPerceptionPass();
-
-      const stepSpec = state.plan[state.currentStepIdx];
-      const track = state.tracks.find(t => t.track_id === stepSpec.target_id) || state.tracks[0];
-      if (stepSpec.target_id && !state.tracks.some(t => t.track_id === stepSpec.target_id)) {
-        appendChat("WORKER", `Refused skill ${stepSpec.skill}: unknown_target ${stepSpec.target_id} (T19/T43).`, "error");
-        state.predicates.no_target = true;
-        renderAll();
-        stopAutoRun();
-        return;
-      }
-
-      // 2. Host derives target Cartesian pose from D/2-corrected track XY + height tier (I1)
-      const fkNow = forwardKinematics(state.pose);
-      let desiredXyz = [...fkNow.tip];
-      let desiredOpen = state.pose.gripper;
-
-      if (stepSpec.skill === "move_above") {
-        desiredXyz = [track.corr_xy[0], track.corr_xy[1], 0.065];
-        desiredOpen = state.graspedObjectId ? ROBOT_SPEC.gripper.min_m : ROBOT_SPEC.gripper.max_m;
-      } else if (stepSpec.skill === "grasp") {
-        const graspZ = Math.max(0.018, track.height_m * 0.5);
-        desiredXyz = [track.corr_xy[0], track.corr_xy[1], graspZ];
-        desiredOpen = ROBOT_SPEC.gripper.min_m;
-      } else if (stepSpec.skill === "lift") {
-        desiredXyz = [track.corr_xy[0], track.corr_xy[1], 0.065];
-        desiredOpen = ROBOT_SPEC.gripper.min_m;
-      } else if (stepSpec.skill === "release") {
-        desiredXyz = [fkNow.tip[0], fkNow.tip[1], fkNow.tip[2]];
-        desiredOpen = ROBOT_SPEC.gripper.max_m;
-      } else if (stepSpec.skill === "retreat") {
-        desiredXyz = [fkNow.tip[0], fkNow.tip[1], 0.095];
-        desiredOpen = ROBOT_SPEC.gripper.max_m;
-      }
-
-      const ik = inverseKinematics(desiredXyz, 0.0);
-      if (!ik.ok) {
-        appendChat("KINEMATICS", `IK ${ik.status.toUpperCase()}: ${ik.reason}`, "error");
-        stopAutoRun();
-        return;
-      }
-
-      // 3. Safety Supervisor pure-function check (I2)
-      const verdict = checkSafety(ik.pose, desiredOpen, true);
-      state.lastSafetyVerdict = verdict;
-      if (!verdict.approved) {
-        state.safetyRejections += 1;
-        appendChat("SAFETY [I2]", `REJECTED (${verdict.reason}): ${verdict.detail}`, "error");
-        state.transcript.push({
-          turn_index: state.currentStepIdx,
-          sim_time_s: +(state.simSteps * state.simDt).toFixed(3),
-          camera_source: state.cameraSource,
-          skill: stepSpec.skill,
-          target_id: stepSpec.target_id,
-          safety_approved: false,
-          outcome: `safety_rejected:${verdict.reason}`
-        });
-        state.actionLogHash = computeActionLogHash(state.transcript);
-        renderAll();
-        stopAutoRun();
-        return;
-      }
-
-      // 4. Unpause fixed-step physics, step trajectory, and log NDJSON firmware packet
-      state.simPaused = false;
-      state.pose = { ...ik.pose, gripper: desiredOpen };
-      state.simSteps += 140;
-      state.simPaused = true;
-
-      const seq = state.fwSeq++;
-      const jointsDeg = {};
-      for (const k of Object.keys(ROBOT_SPEC.joints)) {
-        jointsDeg[k] = +(state.pose[k] * 180 / Math.PI).toFixed(1);
-      }
-      appendNdjsonLog(
-        { cmd: "move", seq, joints_deg: jointsDeg, gripper_m: +desiredOpen.toFixed(3) },
-        { ok: true, seq, state: "ACTIVE" }
-      );
-
-      // Update object physics honestly (no attach-on-contact shortcut: checks jaw closure & XY alignment)
-      let primaryOutcome = "gripper_at_pose";
-      state.predicates = {
-        gripper_at_pose: true,
-        object_moved_with_gripper: false,
-        object_lifted: false,
-        object_knocked_away: false,
-        no_target: false,
-        table_hit: false
-      };
-
-      const targetObj = state.objects.find(o => o.id === stepSpec.target_id && !o.isBin);
-      if (stepSpec.skill === "grasp" && targetObj) {
-        const xyErr = Math.hypot(desiredXyz[0] - targetObj.pos[0], desiredXyz[1] - targetObj.pos[1]);
-        if (xyErr <= 0.016 && Math.abs(desiredXyz[2] - targetObj.pos[2]) <= 0.022) {
-          state.graspedObjectId = targetObj.id;
-          state.pose.gripper = targetObj.size[0];
-          state.predicates.object_moved_with_gripper = true;
-          primaryOutcome = "object_moved_with_gripper";
-        }
-      } else if (stepSpec.skill === "lift" && state.graspedObjectId) {
-        const held = state.objects.find(o => o.id === state.graspedObjectId);
-        if (held) {
-          held.pos = [desiredXyz[0], desiredXyz[1], desiredXyz[2]];
-          state.predicates.object_moved_with_gripper = true;
-          state.predicates.object_lifted = true;
-          primaryOutcome = "object_lifted";
-        }
-      } else if (stepSpec.skill === "move_above" && state.graspedObjectId) {
-        const held = state.objects.find(o => o.id === state.graspedObjectId);
-        if (held) {
-          held.pos = [desiredXyz[0], desiredXyz[1], desiredXyz[2]];
-          state.predicates.object_moved_with_gripper = true;
-        }
-      } else if (stepSpec.skill === "release" && state.graspedObjectId) {
-        const held = state.objects.find(o => o.id === state.graspedObjectId);
-        if (held) {
-          held.pos = [desiredXyz[0], desiredXyz[1], held.size[2] / 2];
-        }
-        state.graspedObjectId = null;
-        primaryOutcome = "gripper_at_pose";
-      }
-
-      state.completedStepIndices.add(state.currentStepIdx);
-      state.transcript.push({
-        turn_index: state.currentStepIdx,
-        sim_time_s: +(state.simSteps * state.simDt).toFixed(3),
-        camera_source: state.cameraSource,
-        skill: stepSpec.skill,
-        target_id: stepSpec.target_id,
-        safety_approved: true,
-        outcome: primaryOutcome
+    async function apiFetch(path, options = {}) {
+      const resp = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        ...options
       });
-      state.actionLogHash = computeActionLogHash(state.transcript);
-
-      appendChat(
-        `WORKER [${state.llmProfile.toUpperCase()}]`,
-        `Executed <b>${stepSpec.skill}(${stepSpec.target_id || ""})</b> via cam=<b>${state.cameraSource}</b> &rarr; outcome: <b>${primaryOutcome}</b>`,
-        primaryOutcome === "object_lifted" ? "success" : "normal"
-      );
-
-      state.currentStepIdx += 1;
-      runPerceptionPass();
-      renderAll();
-
-      if (state.currentStepIdx >= state.plan.length) {
-        stopAutoRun();
-      }
+      const data = await resp.json();
+      return { status: resp.status, ok: resp.ok, data };
     }
 
-    function startAutoRun() {
-      stopAutoRun();
-      if (!state.planApproved) {
-        state.planApproved = true;
-      }
-      state.mode = "RUN";
-      renderAll();
-      state.autoRunTimer = setInterval(() => {
-        if (state.currentStepIdx >= state.plan.length || state.estopped) {
-          stopAutoRun();
-          return;
+    function setConnectionStatus(connected, detailText) {
+      ui.connected = connected;
+      const banner = document.getElementById("connectionBanner");
+      banner.textContent = detailText;
+      banner.className = connected ? "badge badge-ok mono" : "badge badge-err mono";
+    }
+
+    async function fetchConfigAndState() {
+      try {
+        if (!ui.config) {
+          const cfgRes = await apiFetch("/api/config");
+          if (cfgRes.ok) {
+            ui.config = cfgRes.data;
+          }
         }
-        executeNextSkillStep();
-      }, 650);
-    }
-
-    function stopAutoRun() {
-      if (state.autoRunTimer) {
-        clearInterval(state.autoRunTimer);
-        state.autoRunTimer = null;
+        const stRes = await apiFetch("/api/state");
+        if (stRes.ok) {
+          ui.state = stRes.data;
+          setConnectionStatus(true, "CONNECTED // PYTHON AUTHORITY");
+          renderFromPythonState();
+          refreshCameraFrame();
+        } else {
+          setConnectionStatus(false, "DISCONNECTED // RETRYING /api/state...");
+        }
+      } catch (_err) {
+        setConnectionStatus(false, "DISCONNECTED // RETRYING /api/state...");
       }
     }
 
-    // =========================================================================
-    // Viewport A: 5-DOF Arm & Workspace Canvas Renderer
-    // =========================================================================
-    function drawSimViewport() {
+    function refreshCameraFrame() {
+      if (!ui.connected) return;
+      ui.frameImg.src = `/api/frame.jpg?t=${Date.now()}`;
+    }
+
+    function renderFromPythonState() {
+      const st = ui.state;
+      if (!st) return;
+
+      // Mode badge (SIM | HYBRID | REAL CAMERA)
+      const modeBadge = document.getElementById("modeBadge");
+      modeBadge.textContent = st.badge || "SIM";
+      modeBadge.className = st.badge === "HYBRID"
+        ? "badge badge-warn mono"
+        : (st.badge === "REAL CAMERA" ? "badge badge-err mono" : "badge badge-ok mono");
+
+      // Sim clock & steps
+      document.getElementById("simClockDisplay").textContent = `${Number(st.sim_time_s || 0).toFixed(3)}s`;
+      document.getElementById("simStepsDisplay").textContent = String(st.sim_steps || 0);
+
+      // Camera source buttons
+      document.getElementById("camSimBtn").className =
+        st.camera_source === "sim" ? "btn-tech btn-tech-active mono" : "btn-tech mono";
+      document.getElementById("camEspBtn").className =
+        st.camera_source === "esp32_cam" ? "btn-tech btn-tech-active mono" : "btn-tech mono";
+      document.getElementById("camSourceOverlay").textContent = String(st.camera_source || "sim");
+      document.getElementById("execModeOverlay").textContent = String(st.execution_mode || "sim");
+
+      // E-Stop button (always enabled, visually dominant)
+      const estopBtn = document.getElementById("estopBtn");
+      estopBtn.disabled = false;
+      estopBtn.textContent = st.estop ? "CLEAR E-STOP [E]" : "E-STOP [HOLD]";
+      estopBtn.className = st.estop ? "btn-estop btn-estop-latched mono" : "btn-estop mono";
+
+      // Safety verdict banner & distinct rejection outcome
+      const sv = st.safety_verdict || { approved: true, reason: "ok", detail: "ok", rejections: 0 };
+      const safetyBanner = document.getElementById("safetyBannerBadge");
+      const rejOutcome = document.getElementById("safetyRejectionOutcome");
+      if (st.estop) {
+        safetyBanner.textContent = "E-STOP LATCHED // HOLDING POSE (D18)";
+        safetyBanner.className = "badge badge-err mono";
+      } else if (!sv.approved) {
+        safetyBanner.textContent = `I2 REJECTED: ${sv.reason} (${sv.rejections} REJ)`;
+        safetyBanner.className = "badge badge-err mono";
+      } else {
+        safetyBanner.textContent = `I2 SUPERVISOR: APPROVED (${sv.rejections} REJECTIONS)`;
+        safetyBanner.className = "badge badge-ok mono";
+      }
+      rejOutcome.textContent = `LAST SAFETY VERDICT: ${sv.reason} (${sv.detail})`;
+      rejOutcome.className = sv.approved ? "badge badge-ok" : "badge badge-err";
+
+      // Plan approval gate & disabled button reason tooltips (F4.7)
+      const planStatus = document.getElementById("planApprovalStatus");
+      planStatus.textContent = st.plan_approved ? "APPROVED (READY)" : "AWAITING APPROVAL";
+      planStatus.style.color = st.plan_approved ? "var(--status-green)" : "var(--status-amber)";
+
+      const stepBtn = document.getElementById("stepSkillBtn");
+      const runBtn = document.getElementById("runLoopBtn");
+      if (st.estop) {
+        stepBtn.disabled = true;
+        runBtn.disabled = true;
+        stepBtn.title = "Disabled: E-Stop is latched; clear E-Stop first";
+        runBtn.title = "Disabled: E-Stop is latched; clear E-Stop first";
+      } else if (!st.plan_approved) {
+        stepBtn.disabled = true;
+        runBtn.disabled = true;
+        stepBtn.title = "Disabled: Approve the proposed skill plan first (D11)";
+        runBtn.title = "Disabled: Approve the proposed skill plan first (D11)";
+      } else {
+        stepBtn.disabled = false;
+        runBtn.disabled = false;
+        stepBtn.title = "Execute exactly 1 skill via /api/step (Invariant I3)";
+        runBtn.title = "Run approved plan to completion via /api/run (Invariant I4)";
+      }
+
+      // Render Plan List using textContent
+      const planBox = document.getElementById("planListContainer");
+      planBox.replaceChildren();
+      const planItems = st.plan || [];
+      planItems.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "plan-item";
+        const left = document.createElement("span");
+        left.textContent = `${idx + 1}. ${item.skill}(${item.target_id || ""})`;
+        const right = document.createElement("span");
+        right.textContent = `[${String(item.status || "wait").toUpperCase()}]`;
+        row.appendChild(left);
+        row.appendChild(right);
+        planBox.appendChild(row);
+      });
+      document.getElementById("turnCounterBadge").textContent =
+        `TURN ${(st.turn_records || []).length} / ${planItems.length}`;
+
+      // Render Chat Log using textContent
+      const chatBox = document.getElementById("chatStream");
+      chatBox.replaceChildren();
+      (st.chat_log || []).forEach((msg) => {
+        const card = document.createElement("div");
+        card.className = "chat-card";
+        const head = document.createElement("div");
+        head.className = "chat-card-head";
+        const rSpan = document.createElement("span");
+        rSpan.textContent = String(msg.role || "INFO");
+        const tSpan = document.createElement("span");
+        tSpan.textContent = `t=${Number(msg.sim_time_s || 0).toFixed(3)}s`;
+        head.appendChild(rSpan);
+        head.appendChild(tSpan);
+        const body = document.createElement("div");
+        body.textContent = String(msg.text || "");
+        card.appendChild(head);
+        card.appendChild(body);
+        chatBox.appendChild(card);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Render Tracker Table using textContent
+      const tbody = document.getElementById("trackerTableBody");
+      tbody.replaceChildren();
+      (st.tracks || []).forEach((tr) => {
+        const trEl = document.createElement("tr");
+        const cells = [
+          String(tr.track_id || ""),
+          String(tr.label || ""),
+          String(tr.status || ""),
+          `(${Number(tr.bottom_px[0]).toFixed(1)}, ${Number(tr.bottom_px[1]).toFixed(1)})`,
+          `(${Number(tr.raw_xy_m[0]).toFixed(3)}, ${Number(tr.raw_xy_m[1]).toFixed(3)})`,
+          `(${Number(tr.xy_m[0]).toFixed(3)}, ${Number(tr.xy_m[1]).toFixed(3)})`,
+          `${Number(tr.height_m).toFixed(3)}m [${tr.height_source}]`
+        ];
+        cells.forEach((val) => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          trEl.appendChild(td);
+        });
+        tbody.appendChild(trEl);
+      });
+
+      // Render Transcript & SHA-256 Hash from Python
+      document.getElementById("actionHashDisplay").textContent =
+        String(st.action_log_sha256 || "").slice(0, 24) + "...";
+      const transBox = document.getElementById("transcriptContainer");
+      transBox.replaceChildren();
+      (st.turn_records || []).forEach((rec) => {
+        const line = document.createElement("div");
+        line.textContent = JSON.stringify(rec);
+        transBox.appendChild(line);
+      });
+
+      // Render Joints from Python config + state
+      const jointsBox = document.getElementById("jointsContainer");
+      jointsBox.replaceChildren();
+      const jointSpecs = (ui.config && ui.config.robot && ui.config.robot.joints) || {};
+      const jointsDeg = st.joints_deg || {};
+      Object.keys(jointsDeg).forEach((jname) => {
+        const spec = jointSpecs[jname] || { min_deg: -170, max_deg: 170, channel: 0, provenance: "design" };
+        const row = document.createElement("div");
+        row.className = "pred-item";
+        const nameEl = document.createElement("span");
+        nameEl.textContent = `${jname} [ch${spec.channel} · ${spec.provenance}]`;
+        const valEl = document.createElement("span");
+        valEl.textContent = `${Number(jointsDeg[jname]).toFixed(1)} deg [${spec.min_deg}..${spec.max_deg}]`;
+        row.appendChild(nameEl);
+        row.appendChild(valEl);
+        jointsBox.appendChild(row);
+      });
+
+      // Render Privileged & Perceived outcomes (I5 / F3)
+      const ep = st.episode_summary || {};
+      document.getElementById("failureModeBadge").textContent = `failure_mode: ${ep.failure_mode || "none"}`;
+      const privEl = document.getElementById("metricPrivSuccess");
+      if (ep.task_success_privileged === null || ep.task_success_privileged === undefined) {
+        privEl.textContent = "N/A (REAL CAM)";
+      } else {
+        privEl.textContent = ep.task_success_privileged ? "PASS (TRUE)" : "FALSE";
+      }
+      const percEl = document.getElementById("metricPercSuccess");
+      percEl.textContent = ep.task_success_perceived ? "PASS (TRUE)" : "FALSE";
+
+      const predGrid = document.getElementById("predicateGrid");
+      predGrid.replaceChildren();
+      const preds = st.predicates || {};
+      Object.keys(preds).forEach((pname) => {
+        const item = document.createElement("div");
+        item.className = "pred-item";
+        const kSpan = document.createElement("span");
+        kSpan.textContent = pname;
+        const vSpan = document.createElement("span");
+        vSpan.textContent = preds[pname] ? "TRUE" : "FALSE";
+        item.appendChild(kSpan);
+        item.appendChild(vSpan);
+        predGrid.appendChild(item);
+      });
+
+      // Render NDJSON log using textContent
+      const ndBox = document.getElementById("ndjsonLog");
+      ndBox.replaceChildren();
+      (st.ndjson_log || []).forEach((entry) => {
+        const wrap = document.createElement("div");
+        const cLine = document.createElement("div");
+        cLine.textContent = `> ${JSON.stringify(entry.cmd)}`;
+        const aLine = document.createElement("div");
+        aLine.textContent = `< ${JSON.stringify(entry.ack)}`;
+        wrap.appendChild(cLine);
+        wrap.appendChild(aLine);
+        ndBox.appendChild(wrap);
+      });
+      document.getElementById("fwStateBadge").textContent =
+        st.estop ? "STATE: ESTOP_HOLD" : "STATE: ACTIVE";
+
+      // Update TCP overlay
+      if (st.tcp && st.tcp.position) {
+        const [tx, ty, tz] = st.tcp.position;
+        document.getElementById("tcpPoseOverlay").textContent =
+          `x=${tx >= 0 ? "+" : ""}${tx.toFixed(3)} y=${ty >= 0 ? "+" : ""}${ty.toFixed(3)} z=${tz >= 0 ? "+" : ""}${tz.toFixed(3)}`;
+        document.getElementById("jawAzimuthOverlay").textContent = `${Number(st.tcp.azimuth_deg).toFixed(1)} deg`;
+        document.getElementById("jawOpeningOverlay").textContent = `${(Number(st.tcp.opening_m) * 1000).toFixed(1)} mm`;
+      }
+
+      drawSimCanvas();
+      drawCameraCanvas();
+    }
+
+    // Viewport A: Pure 3D->2D display of keypoints and objects supplied by Python /api/state
+    function drawSimCanvas() {
       const canvas = document.getElementById("simCanvas");
       const ctx = canvas.getContext("2d");
       const W = canvas.width, H = canvas.height;
       ctx.fillStyle = "#08090a";
       ctx.fillRect(0, 0, W, H);
 
-      // Project 3D world (x, y, z) into Viewport A depending on ISO / SIDE / TOP view mode
-      function projSim(pt) {
+      if (!ui.state || !ui.state.tcp || !ui.state.tcp.keypoints_xyz) return;
+
+      function proj(pt) {
         const [x, y, z] = pt;
-        if (state.simViewMode === "TOP") {
+        if (ui.simViewMode === "TOP") {
           return [W / 2 + x * 1100, H * 0.82 - y * 1100];
         }
-        if (state.simViewMode === "SIDE") {
+        if (ui.simViewMode === "SIDE") {
           return [W * 0.18 + y * 1150, H * 0.78 - z * 1150];
         }
-        // Isometric 3D projection
         const isoX = (x - (y - 0.15) * 0.55) * 1050;
         const isoY = -z * 1050 + (x * 0.25 + (y - 0.15) * 0.45) * 650;
         return [W * 0.52 + isoX, H * 0.68 + isoY];
       }
 
-      // Draw Table Plane (0.55 x 0.50 at (0, 0.12)) + 20mm Rim (C18)
-      const tableCorners = [
-        [-0.275, -0.13, 0],
-        [ 0.275, -0.13, 0],
-        [ 0.275,  0.37, 0],
-        [-0.275,  0.37, 0]
-      ];
-      ctx.beginPath();
-      tableCorners.forEach((c, idx) => {
-        const [px, py] = projSim(c);
-        if (idx === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      });
-      ctx.closePath();
-      ctx.fillStyle = "#12151a";
-      ctx.fill();
-      ctx.strokeStyle = "#2b313b";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Draw Coordinate Grid on Table
-      ctx.strokeStyle = "#191d24";
-      ctx.lineWidth = 1;
-      for (let gx = -0.25; gx <= 0.251; gx += 0.05) {
-        const [x0, y0] = projSim([gx, -0.10, 0]);
-        const [x1, y1] = projSim([gx, 0.35, 0]);
-        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-      }
-      for (let gy = -0.10; gy <= 0.351; gy += 0.05) {
-        const [x0, y0] = projSim([-0.25, gy, 0]);
-        const [x1, y1] = projSim([0.25, gy, 0]);
-        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-      }
-
-      // Draw Reachable Workspace Disk (r=0.10m at (0, 0.20))
-      ctx.beginPath();
-      for (let i = 0; i <= 48; i++) {
-        const ang = (2 * Math.PI * i) / 48;
-        const wx = ROBOT_SPEC.safety.workspace_centre[0] + ROBOT_SPEC.safety.workspace_radius * Math.cos(ang);
-        const wy = ROBOT_SPEC.safety.workspace_centre[1] + ROBOT_SPEC.safety.workspace_radius * Math.sin(ang);
-        const [px, py] = projSim([wx, wy, 0.001]);
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.strokeStyle = "#3b82f6";
-      ctx.setLineDash([4, 4]);
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Draw Task Objects & Bins
-      for (const obj of state.objects) {
-        const [ox, oy, oz] = obj.pos;
-        const [sx, sy, sz] = obj.size;
-        const z0 = Math.max(0, oz - sz / 2);
-        const z1 = oz + sz / 2;
-        const topPoly = [
-          [ox - sx / 2, oy - sy / 2, z1],
-          [ox + sx / 2, oy - sy / 2, z1],
-          [ox + sx / 2, oy + sy / 2, z1],
-          [ox - sx / 2, oy + sy / 2, z1]
-        ];
-        const frontPoly = [
-          [ox - sx / 2, oy - sy / 2, z0],
-          [ox + sx / 2, oy - sy / 2, z0],
-          [ox + sx / 2, oy - sy / 2, z1],
-          [ox - sx / 2, oy - sy / 2, z1]
-        ];
-        ctx.beginPath();
-        frontPoly.forEach((p, i) => {
-          const [u, v] = projSim(p);
-          if (i === 0) ctx.moveTo(u, v); else ctx.lineTo(u, v);
-        });
-        ctx.closePath();
-        ctx.fillStyle = obj.color;
-        ctx.fill();
-
-        ctx.beginPath();
-        topPoly.forEach((p, i) => {
-          const [u, v] = projSim(p);
-          if (i === 0) ctx.moveTo(u, v); else ctx.lineTo(u, v);
-        });
-        ctx.closePath();
-        ctx.fillStyle = obj.topColor;
-        ctx.fill();
-        ctx.strokeStyle = "#08090a";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        const [lu, lv] = projSim([ox, oy, z1 + 0.015]);
-        ctx.fillStyle = "#e5e7eb";
-        ctx.font = "10px 'JetBrains Mono', monospace";
-        ctx.fillText(obj.id, lu - 28, lv);
-      }
-
-      // Draw 5-DOF Arm Kinematic Chain
-      const fk = forwardKinematics(state.pose);
-      const chainPts = [
-        [0, 0, 0],
-        fk.shoulder,
-        fk.elbow,
-        fk.wrist,
-        fk.tip
-      ];
-      ctx.strokeStyle = state.estopped ? "#ef4444" : "#d1d5db";
-      ctx.lineWidth = 5;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      chainPts.forEach((pt, idx) => {
-        const [u, v] = projSim(pt);
-        if (idx === 0) ctx.moveTo(u, v);
-        else ctx.lineTo(u, v);
-      });
-      ctx.stroke();
-
-      // Draw Joint Pivots
-      const jointLabels = ["BASE", "SHOULDER", "ELBOW", "WRIST", "TCP/JAWS"];
-      chainPts.forEach((pt, idx) => {
-        const [u, v] = projSim(pt);
-        ctx.fillStyle = idx === 4 ? "#10b981" : "#08090a";
-        ctx.strokeStyle = "#e5e7eb";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(u, v, idx === 4 ? 5 : 4, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-        if (idx === 1 || idx === 2 || idx === 4) {
-          ctx.fillStyle = "#9ca3af";
-          ctx.font = "10px 'JetBrains Mono', monospace";
-          ctx.fillText(jointLabels[idx], u + 8, v + 3);
-        }
-      });
-
-      // Draw Parallel-Jaw Fingers at TCP
-      const halfOpen = state.pose.gripper / 2;
-      const cAz = Math.cos(fk.closingAzimuth), sAz = Math.sin(fk.closingAzimuth);
-      const fPos = [fk.tip[0] + halfOpen * cAz, fk.tip[1] + halfOpen * sAz, fk.tip[2]];
-      const fNeg = [fk.tip[0] - halfOpen * cAz, fk.tip[1] - halfOpen * sAz, fk.tip[2]];
-      const [uPos, vPos] = projSim(fPos);
-      const [uNeg, vNeg] = projSim(fNeg);
-      ctx.strokeStyle = "#10b981";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(uPos, vPos - 8); ctx.lineTo(uPos, vPos + 6);
-      ctx.moveTo(uNeg, vNeg - 8); ctx.lineTo(uNeg, vNeg + 6);
-      ctx.moveTo(uPos, vPos - 8); ctx.lineTo(uNeg, vNeg - 8);
-      ctx.stroke();
-
-      // Update overlay numbers
-      document.getElementById("tcpPoseOverlay").textContent =
-        `x=${fk.tip[0] >= 0 ? "+" : ""}${fk.tip[0].toFixed(3)} y=+${fk.tip[1].toFixed(3)} z=+${fk.tip[2].toFixed(3)}`;
-      document.getElementById("jawAzimuthOverlay").textContent =
-        `${(fk.closingAzimuth * 180 / Math.PI).toFixed(1)}°`;
-      document.getElementById("jawOpeningOverlay").textContent =
-        `${(state.pose.gripper * 1000).toFixed(1)}mm`;
-    }
-
-    // =========================================================================
-    // Viewport B: Camera Input Feed Renderer (SIM_CAM vs ESP32-CAM)
-    // =========================================================================
-    function drawCameraViewport() {
-      const canvas = document.getElementById("camCanvas");
-      const ctx = canvas.getContext("2d");
-      const W = canvas.width, H = canvas.height;
-
-      // Sky background
-      ctx.fillStyle = "#11141a";
-      ctx.fillRect(0, 0, W, H);
-
-      // Table surface polygon in camera view
-      const tCorners = [
-        [-0.275, -0.13, 0],
-        [ 0.275, -0.13, 0],
-        [ 0.275,  0.37, 0],
-        [-0.275,  0.37, 0]
-      ];
-      ctx.beginPath();
-      tCorners.forEach((p, idx) => {
-        const [u, v] = projectWorldToPixel(p);
-        if (idx === 0) ctx.moveTo(u, v);
-        else ctx.lineTo(u, v);
-      });
-      ctx.closePath();
-      ctx.fillStyle = "#262930";
-      ctx.fill();
-      ctx.strokeStyle = "#3a3f4b";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Optional Workspace Disk Mask Overlay (GeometricDetector mask)
-      if (document.getElementById("toggleHomographyGridCheckbox").checked) {
+      // Draw workspace disk from /api/config
+      if (ui.config && ui.config.robot && ui.config.robot.safety) {
+        const [cx, cy] = ui.config.robot.safety.workspace_centre;
+        const rad = ui.config.robot.safety.workspace_radius;
         ctx.beginPath();
         for (let i = 0; i <= 48; i++) {
           const ang = (2 * Math.PI * i) / 48;
-          const wx = ROBOT_SPEC.safety.workspace_centre[0] + ROBOT_SPEC.safety.workspace_radius * Math.cos(ang);
-          const wy = ROBOT_SPEC.safety.workspace_centre[1] + ROBOT_SPEC.safety.workspace_radius * Math.sin(ang);
-          const [u, v] = projectWorldToPixel([wx, wy, 0]);
-          if (i === 0) ctx.moveTo(u, v);
-          else ctx.lineTo(u, v);
+          const [px, py] = proj([cx + rad * Math.cos(ang), cy + rad * Math.sin(ang), 0.001]);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
         }
         ctx.strokeStyle = "#3b82f6";
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
-      // Render objects sorted back-to-front (largest Y first)
-      const sortedObjs = [...state.objects].sort((a, b) => b.pos[1] - a.pos[1]);
-      for (const obj of sortedObjs) {
-        const [ox, oy, oz] = obj.pos;
-        const [sx, sy, sz] = obj.size;
-        const z0 = Math.max(0, oz - sz / 2);
-        const z1 = oz + sz / 2;
-
-        const frontFace = [
-          [ox - sx / 2, oy - sy / 2, z0],
-          [ox + sx / 2, oy - sy / 2, z0],
-          [ox + sx / 2, oy - sy / 2, z1],
-          [ox - sx / 2, oy - sy / 2, z1]
-        ];
-        const topFace = [
-          [ox - sx / 2, oy - sy / 2, z1],
-          [ox + sx / 2, oy - sy / 2, z1],
-          [ox + sx / 2, oy + sy / 2, z1],
-          [ox - sx / 2, oy + sy / 2, z1]
-        ];
-
-        for (const [face, col] of [[topFace, obj.topColor], [frontFace, obj.color]]) {
-          ctx.beginPath();
-          face.forEach((pt, idx) => {
-            const [u, v] = projectWorldToPixel(pt);
-            if (idx === 0) ctx.moveTo(u, v);
-            else ctx.lineTo(u, v);
-          });
-          ctx.closePath();
-          ctx.fillStyle = col;
-          ctx.fill();
-        }
-      }
-
-      // If ESP32-CAM source is active, render subtle scanline / sensor grain indicator
-      if (state.cameraSource === "esp32_cam") {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.025)";
-        for (let y = 0; y < H; y += 4) {
-          ctx.fillRect(0, y, W, 1);
-        }
-      }
-
-      // Draw Detection Bounding Boxes, Tracked IDs, and D/2 Correction Vectors
-      const showD2 = document.getElementById("toggleD2Checkbox").checked;
-      for (const tr of state.tracks) {
-        const [ox, oy, oz] = tr.true_pos;
-        const [sx, sy, sz] = tr.size;
-        const corners = [
-          projectWorldToPixel([ox - sx / 2, oy - sy / 2, Math.max(0, oz - sz / 2)]),
-          projectWorldToPixel([ox + sx / 2, oy - sy / 2, Math.max(0, oz - sz / 2)]),
-          projectWorldToPixel([ox - sx / 2, oy + sy / 2, oz + sz / 2]),
-          projectWorldToPixel([ox + sx / 2, oy + sy / 2, oz + sz / 2])
-        ];
-        const uMin = Math.min(...corners.map(c => c[0]));
-        const uMax = Math.max(...corners.map(c => c[0]));
-        const vMin = Math.min(...corners.map(c => c[1]));
-        const vMax = Math.max(...corners.map(c => c[1]));
-
-        // Detection bbox
-        ctx.strokeStyle = "#10b981";
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(uMin, vMin, uMax - uMin, vMax - vMin);
-
-        // Track ID Tag
-        ctx.fillStyle = "#08090a";
-        ctx.fillRect(uMin, vMin - 16, 132, 15);
-        ctx.fillStyle = "#10b981";
-        ctx.font = "10px 'JetBrains Mono', monospace";
-        ctx.fillText(`${tr.track_id} [${tr.err_mm.toFixed(1)}mm]`, uMin + 3, vMin - 5);
-
-        // Front-bottom edge contact point vs D/2-corrected footprint centre
-        if (showD2 && !tr.isBin) {
-          const [bu, bv] = tr.bottom_px;
-          const [cu, cv] = projectWorldToPixel([tr.corr_xy[0], tr.corr_xy[1], 0.0]);
-
-          // Amber dot: raw front-bottom edge
-          ctx.fillStyle = "#f59e0b";
-          ctx.beginPath();
-          ctx.arc(bu, bv, 3.5, 0, 2 * Math.PI);
-          ctx.fill();
-
-          // Vector arrow from raw front-bottom edge to D/2-corrected footprint centre
-          ctx.strokeStyle = "#10b981";
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(bu, bv);
-          ctx.lineTo(cu, cv);
-          ctx.stroke();
-
-          // Green crosshair: D/2-corrected footprint centre
-          ctx.fillStyle = "#10b981";
-          ctx.beginPath();
-          ctx.arc(cu, cv, 3.5, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-      }
-    }
-
-    // =========================================================================
-    // Render DOM Tables & Telemetry Panels
-    // =========================================================================
-    function renderAll() {
-      // 1. Header badges
-      document.getElementById("simClockDisplay").textContent = `${(state.simSteps * state.simDt).toFixed(3)}s`;
-      document.getElementById("simStepsDisplay").textContent = `${state.simSteps}`;
-      const pauseTag = document.getElementById("simPauseTag");
-      pauseTag.textContent = state.simPaused ? "PAUSED (I6)" : "STEPPING";
-      pauseTag.className = state.simPaused
-        ? "ml-1.5 text-[10px] px-1 bg-[#232830] text-[#f59e0b]"
-        : "ml-1.5 text-[10px] px-1 bg-[#0b221a] text-[#10b981]";
-
-      const safetyBadge = document.getElementById("safetyBannerBadge");
-      if (state.estopped) {
-        safetyBadge.textContent = "E-STOP LATCHED: HOLDING POSE (D18)";
-        safetyBadge.className = "mono text-[11px] px-2 py-0.5 bg-[#290f12] border border-[#ef4444] text-[#ef4444]";
-      } else if (!state.lastSafetyVerdict.approved) {
-        safetyBadge.textContent = `I2 REJECTED: ${state.lastSafetyVerdict.reason.toUpperCase()} (${state.safetyRejections} REJ)`;
-        safetyBadge.className = "mono text-[11px] px-2 py-0.5 bg-[#290f12] border border-[#ef4444] text-[#ef4444]";
-      } else {
-        safetyBadge.textContent = `I2 SUPERVISOR: APPROVED (${state.safetyRejections} REJECTIONS)`;
-        safetyBadge.className = "mono text-[11px] px-2 py-0.5 bg-[#0b221a] border border-[#10b981] text-[#10b981]";
-      }
-
-      // Mode buttons
-      for (const [m, id] of [["PLAN", "modePlanBtn"], ["RUN", "modeRunBtn"], ["STEP", "modeStepBtn"], ["REPLAY", "modeReplayBtn"]]) {
-        const el = document.getElementById(id);
-        el.className = state.mode === m ? "btn-tech btn-tech-active mono" : "btn-tech mono";
-      }
-
-      // Camera source buttons
-      document.getElementById("camSimBtn").className =
-        state.cameraSource === "sim" ? "btn-tech btn-tech-active mono" : "btn-tech mono";
-      document.getElementById("camEspBtn").className =
-        state.cameraSource === "esp32_cam" ? "btn-tech btn-tech-active mono" : "btn-tech mono";
-      const ep = document.getElementById("espEndpointInput").value.trim() || "192.168.1.50";
-      document.getElementById("camViewportTitle").textContent =
-        state.cameraSource === "sim"
-          ? "VIEWPORT B // CAMERA INPUT [SIM_CAM 640x480]"
-          : `VIEWPORT B // CAMERA INPUT [ESP32_CAM http://${ep}/capture]`;
-      document.getElementById("camSourceOverlay").textContent =
-        state.cameraSource === "sim"
-          ? "SimCameraSource (Paused Frame, I6)"
-          : `ESP32CameraSource (http://${ep}/capture -> 640x480)`;
-
-      // E-stop button state
-      const estopBtn = document.getElementById("estopBtn");
-      estopBtn.textContent = state.estopped ? "RESUME E-STOP [E]" : "E-STOP [HOLD]";
-      estopBtn.className = state.estopped ? "btn-estop btn-estop-latched mono" : "btn-estop mono";
-
-      // 2. Plan Tree
-      const planApprovalEl = document.getElementById("planApprovalStatus");
-      planApprovalEl.textContent = state.planApproved ? "APPROVED (READY)" : "AWAITING APPROVAL";
-      planApprovalEl.className = state.planApproved
-        ? "mono text-[10px] text-[#10b981]"
-        : "mono text-[10px] text-[#f59e0b]";
-
-      const planContainer = document.getElementById("planListContainer");
-      planContainer.innerHTML = "";
-      state.plan.forEach((step, idx) => {
-        const isDone = state.completedStepIndices.has(idx);
-        const isCurrent = idx === state.currentStepIdx;
-        const badge = isDone ? "[DONE]" : (isCurrent ? "[NEXT]" : "[WAIT]");
-        const color = isDone ? "text-[#10b981]" : (isCurrent ? "text-white font-semibold" : "text-[#646d7a]");
-        const row = document.createElement("div");
-        row.className = `flex items-center justify-between px-2 py-1 border border-[#232830] bg-[#15181d] ${color}`;
-        row.innerHTML = `
-          <span>${idx + 1}. ${step.skill}(${step.target_id || ""})</span>
-          <span class="text-[10px]">${badge}</span>
-        `;
-        planContainer.appendChild(row);
-      });
-      document.getElementById("turnCounterBadge").textContent =
-        `TURN ${state.currentStepIdx} / ${state.plan.length}`;
-
-      // 3. Tracker Table
-      const tbody = document.getElementById("trackerTableBody");
-      tbody.innerHTML = "";
-      for (const tr of state.tracks) {
-        const trEl = document.createElement("tr");
-        trEl.className = "hover:bg-[#15181d]";
-        trEl.innerHTML = `
-          <td class="py-1.5 px-2.5 font-semibold text-white">${tr.track_id}</td>
-          <td class="py-1.5 px-2.5 text-[#d1d5db]">${tr.label}</td>
-          <td class="py-1.5 px-2.5"><span class="px-1.5 py-0.5 bg-[#0b221a] text-[#10b981] text-[10px]">${tr.status}</span></td>
-          <td class="py-1.5 px-2.5 text-[#9ca3af]">(${tr.bottom_px[0].toFixed(1)}, ${tr.bottom_px[1].toFixed(1)})</td>
-          <td class="py-1.5 px-2.5 text-[#f59e0b]">(${tr.raw_xy[0].toFixed(3)}, ${tr.raw_xy[1].toFixed(3)})</td>
-          <td class="py-1.5 px-2.5 text-[#10b981] font-semibold">(${tr.corr_xy[0].toFixed(3)}, ${tr.corr_xy[1].toFixed(3)})</td>
-          <td class="py-1.5 px-2.5 text-[#d1d5db]">${tr.height_m.toFixed(3)}m <span class="text-[#646d7a]">[${tr.height_source}]</span></td>
-          <td class="py-1.5 px-2.5 text-[#10b981]">${tr.err_mm.toFixed(2)}</td>
-        `;
-        tbody.appendChild(trEl);
-      }
-
-      // 4. Transcript & SHA-256 Hash
-      document.getElementById("actionHashDisplay").textContent =
-        `${state.actionLogHash.slice(0, 20)}...`;
-      const transBox = document.getElementById("transcriptContainer");
-      transBox.innerHTML = "";
-      if (state.transcript.length === 0) {
-        transBox.innerHTML = `<div class="text-[#646d7a]">No turns recorded in current episode yet. Approve plan and click STEP or AUTO RUN.</div>`;
-      } else {
-        state.transcript.forEach(entry => {
-          const line = document.createElement("div");
-          line.className = entry.safety_approved ? "text-[#d1d5db]" : "text-[#ef4444]";
-          line.textContent = JSON.stringify(entry);
-          transBox.appendChild(line);
-        });
-      }
-
-      // 5. 5-DOF Joint Sliders
-      const jointsBox = document.getElementById("jointsContainer");
-      jointsBox.innerHTML = "";
-      for (const [jname, spec] of Object.entries(ROBOT_SPEC.joints)) {
-        const rad = state.pose[jname];
-        const deg = rad * 180 / Math.PI;
-        const wrap = document.createElement("div");
-        wrap.className = "space-y-0.5";
-        wrap.innerHTML = `
-          <div class="flex justify-between mono text-[11px]">
-            <span class="text-[#d1d5db]">${jname} <span class="text-[#646d7a]">[ch${spec.ch} · ${spec.provenance}]</span></span>
-            <span class="text-white font-semibold">${deg.toFixed(1)}° <span class="text-[#646d7a]">(${rad.toFixed(2)} rad)</span></span>
-          </div>
-          <input
-            type="range"
-            min="${spec.min_deg}"
-            max="${spec.max_deg}"
-            step="0.5"
-            value="${deg.toFixed(1)}"
-            data-joint="${jname}"
-            class="joint-slider"
-          />
-        `;
-        jointsBox.appendChild(wrap);
-      }
-      document.querySelectorAll(".joint-slider").forEach(slider => {
-        slider.addEventListener("input", (e) => {
-          if (state.estopped) return;
-          const jname = e.target.getAttribute("data-joint");
-          const degVal = parseFloat(e.target.value);
-          const candidatePose = { ...state.pose, [jname]: degVal * Math.PI / 180 };
-          const verdict = checkSafety(candidatePose, state.pose.gripper, false);
-          state.lastSafetyVerdict = verdict;
-          if (verdict.approved) {
-            state.pose = candidatePose;
-          } else {
-            state.safetyRejections += 1;
-          }
-          renderAll();
-        });
+      // Draw objects from /api/state
+      (ui.state.objects || []).forEach((obj) => {
+        const [u, v] = proj(obj.pos);
+        ctx.fillStyle = obj.is_bin ? "#238845" : (obj.name.includes("blue") ? "#3b6fd9" : "#d94040");
+        ctx.fillRect(u - 12, v - 12, 24, 24);
+        ctx.fillStyle = "#e5e7eb";
+        ctx.font = "10px monospace";
+        ctx.fillText(String(obj.name), u - 20, v - 16);
       });
 
-      // 6. Outcome Predicates & Privileged vs Perceived Grading (I5)
-      const predGrid = document.getElementById("predicateGrid");
-      predGrid.innerHTML = "";
-      for (const [pname, pval] of Object.entries(state.predicates)) {
-        const badge = document.createElement("div");
-        const activeCol = pval
-          ? (pname === "table_hit" || pname === "object_knocked_away" ? "border-[#ef4444] text-[#ef4444] bg-[#290f12]" : "border-[#10b981] text-[#10b981] bg-[#0b221a]")
-          : "border-[#232830] text-[#646d7a] bg-[#08090a]";
-        badge.className = `border px-2 py-1 flex justify-between ${activeCol}`;
-        badge.innerHTML = `<span>${pname}</span><span>${pval ? "TRUE" : "FALSE"}</span>`;
-        predGrid.appendChild(badge);
-      }
-
-      const redObj = state.objects.find(o => o.id === "red_block_1");
-      const binObj = state.objects.find(o => o.isBin);
-      let privSuccess = false;
-      if (state.taskLevel === "L1" && redObj) {
-        privSuccess = (redObj.pos[2] - 0.020) > 0.015;
-      } else if (state.taskLevel === "L2" && redObj && binObj) {
-        privSuccess = Math.hypot(redObj.pos[0] - binObj.pos[0], redObj.pos[1] - binObj.pos[1]) <= 0.040 && !state.graspedObjectId;
-      }
-      const percSuccess = state.predicates.object_lifted || (state.taskLevel === "L2" && privSuccess);
-
-      const privEl = document.getElementById("metricPrivSuccess");
-      privEl.textContent = privSuccess ? "PASS (TRUE)" : "IN PROGRESS";
-      privEl.className = privSuccess ? "text-xs font-bold text-[#10b981] mt-0.5" : "text-xs font-bold text-[#9ca3af] mt-0.5";
-
-      const percEl = document.getElementById("metricPercSuccess");
-      percEl.textContent = percSuccess ? "PASS (TRUE)" : "IN PROGRESS";
-      percEl.className = percSuccess ? "text-xs font-bold text-[#10b981] mt-0.5" : "text-xs font-bold text-[#9ca3af] mt-0.5";
-
-      // 7. Firmware state badge
-      const fwBadge = document.getElementById("fwStateBadge");
-      fwBadge.textContent = state.estopped ? "STATE: ESTOP_HOLD" : "STATE: ACTIVE";
-      fwBadge.className = state.estopped ? "mono text-[10px] text-[#ef4444]" : "mono text-[10px] text-[#10b981]";
-
-      drawSimViewport();
-      drawCameraViewport();
+      // Draw kinematic chain keypoints computed by Python
+      const kp = ui.state.tcp.keypoints_xyz;
+      const chain = [kp.base, kp.shoulder, kp.elbow, kp.wrist, kp.tip];
+      ctx.strokeStyle = ui.state.estop ? "#ef4444" : "#d1d5db";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      chain.forEach((pt, idx) => {
+        const [u, v] = proj(pt);
+        if (idx === 0) ctx.moveTo(u, v);
+        else ctx.lineTo(u, v);
+      });
+      ctx.stroke();
     }
 
-    // Reset Episode & Scene
-    function resetEpisode() {
-      stopAutoRun();
-      state.taskLevel = document.getElementById("taskSelect").value;
-      state.seed = Math.max(0, Math.min(29, parseInt(document.getElementById("seedSelect").value || "0", 10)));
-      state.pose = { ...ROBOT_SPEC.home_pose };
-      state.simSteps = 50;
-      state.simPaused = true;
-      state.graspedObjectId = null;
-      state.completedStepIndices.clear();
-      state.currentStepIdx = 0;
-      state.transcript = [];
-      state.tampered = false;
-      state.planApproved = false;
-      state.mode = "PLAN";
-      state.lastSafetyVerdict = { approved: true, reason: "ok", detail: "nominal" };
-      state.predicates = {
-        gripper_at_pose: true,
-        object_moved_with_gripper: false,
-        object_lifted: false,
-        object_knocked_away: false,
-        no_target: false,
-        table_hit: false
-      };
-
-      state.objects = spawnSeededScene(state.seed, state.taskLevel);
-      runPerceptionPass();
-
-      const defaultPrompt = state.taskLevel === "L2"
-        ? "Pick up the red block and place it in the bin."
-        : "Pick up the red block and lift it off the table.";
-      document.getElementById("chatInput").value = defaultPrompt;
-      state.plan = buildSkillPlanFromPrompt(defaultPrompt);
-      state.actionLogHash = computeActionLogHash(state.transcript);
-
-      document.getElementById("chatStream").innerHTML = "";
-      appendChat(
-        "SYSTEM",
-        `Loaded <b>${state.taskLevel}</b> · Seed <b>#${state.seed}</b> · Camera source: <b>${state.cameraSource.toUpperCase()}</b>. Tracked ${state.tracks.length} object(s).`
-      );
-      appendChat(
-        "PLANNER",
-        `Proposed ${state.plan.length}-step skill plan (validated against tracked IDs: ${state.tracks.map(t => t.track_id).join(", ")}). Press <b>APPROVE [P]</b> to authorize execution.`
-      );
-      renderAll();
+    // Viewport B: Draws the JPEG frame fetched from Python /api/frame.jpg
+    function drawCameraCanvas() {
+      const canvas = document.getElementById("camCanvas");
+      const ctx = canvas.getContext("2d");
+      if (ui.frameLoaded && ui.frameImg.complete && ui.frameImg.naturalWidth > 0) {
+        ctx.drawImage(ui.frameImg, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = "#11141a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
     }
 
-    // =========================================================================
-    // Event Listeners & Keyboard Shortcuts (p, s, e, r)
-    // =========================================================================
     window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("resetSceneBtn").addEventListener("click", resetEpisode);
-      document.getElementById("taskSelect").addEventListener("change", resetEpisode);
-      document.getElementById("seedSelect").addEventListener("change", resetEpisode);
-
-      document.getElementById("heightTierSelect").addEventListener("change", (e) => {
-        state.heightTier = e.target.value;
-        if (state.heightTier === "vp") {
-          appendChat("PERCEPTION", "Warning (D6 / T22): Vanishing-point silhouette tier is confounded by footprint depth D*sin(35°) (+72% bias on 4cm cube).", "warn");
-        }
-        runPerceptionPass();
-        renderAll();
+      document.getElementById("resetSceneBtn").addEventListener("click", async () => {
+        const level = document.getElementById("taskSelect").value;
+        const seed = parseInt(document.getElementById("seedSelect").value || "0", 10);
+        await apiFetch("/api/reset", {
+          method: "POST",
+          body: JSON.stringify({ seed, level })
+        });
+        await fetchConfigAndState();
       });
 
-      document.getElementById("llmProfileSelect").addEventListener("change", (e) => {
-        state.llmProfile = e.target.value;
-        appendChat("SYSTEM", `Switched agent client profile to <b>${state.llmProfile}</b> (SHA-256 request/response logging enabled).`);
+      document.getElementById("camSimBtn").addEventListener("click", async () => {
+        await apiFetch("/api/camera_source", {
+          method: "POST",
+          body: JSON.stringify({ source: "sim" })
+        });
+        await fetchConfigAndState();
       });
 
-      // Camera Source Switcher (C65: SIM vs ESP32_CAM)
-      document.getElementById("camSimBtn").addEventListener("click", () => {
-        state.cameraSource = "sim";
-        runPerceptionPass();
-        appendChat("PERCEPTION [C65]", "Switched active camera source to <b>sim</b> (SimCameraSource: paused 640x480 render, Invariant I6).");
-        renderAll();
+      document.getElementById("camEspBtn").addEventListener("click", async () => {
+        const calFile = document.getElementById("calibrationFileInput").value.trim();
+        const payload = { source: "esp32_cam", allow_real_camera_with_sim_arm: true };
+        if (calFile) payload.calibration_file = calFile;
+        await apiFetch("/api/camera_source", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        await fetchConfigAndState();
       });
 
-      document.getElementById("camEspBtn").addEventListener("click", () => {
-        state.cameraSource = "esp32_cam";
-        const ep = document.getElementById("espEndpointInput").value.trim() || "192.168.1.50";
-        runPerceptionPass();
-        appendChat("PERCEPTION [C65]", `Switched active camera source to <b>esp32_cam</b> (ESP32CameraSource: GET http://${ep}/capture -> 640x480).`);
-        renderAll();
-      });
-
-      document.getElementById("captureFrameBtn").addEventListener("click", () => {
-        runPerceptionPass();
-        appendChat("CAMERA", `Captured still frame from <b>${state.cameraSource}</b> (${state.tracks.length} detections localized with D/2 correction).`);
-        renderAll();
-      });
-
-      document.getElementById("toggleD2Checkbox").addEventListener("change", renderAll);
-      document.getElementById("toggleHomographyGridCheckbox").addEventListener("change", renderAll);
-
-      // Sim Viewport Camera Projection Buttons
-      document.getElementById("simViewIsoBtn").addEventListener("click", () => {
-        state.simViewMode = "ISO";
-        document.getElementById("simViewIsoBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#232830] text-white";
-        document.getElementById("simViewSideBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]";
-        document.getElementById("simViewTopBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]";
-        drawSimViewport();
-      });
-      document.getElementById("simViewSideBtn").addEventListener("click", () => {
-        state.simViewMode = "SIDE";
-        document.getElementById("simViewSideBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#232830] text-white";
-        document.getElementById("simViewIsoBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]";
-        document.getElementById("simViewTopBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]";
-        drawSimViewport();
-      });
-      document.getElementById("simViewTopBtn").addEventListener("click", () => {
-        state.simViewMode = "TOP";
-        document.getElementById("simViewTopBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#232830] text-white";
-        document.getElementById("simViewIsoBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]";
-        document.getElementById("simViewSideBtn").className = "px-1.5 py-0.5 text-[10px] mono bg-[#15181d] text-[#9ca3af]";
-        drawSimViewport();
-      });
-
-      // Mode buttons
-      document.getElementById("modePlanBtn").addEventListener("click", () => {
-        stopAutoRun();
-        state.mode = "PLAN";
-        renderAll();
-      });
-      document.getElementById("modeRunBtn").addEventListener("click", () => {
-        state.planApproved = true;
-        startAutoRun();
-      });
-      document.getElementById("modeStepBtn").addEventListener("click", () => {
-        stopAutoRun();
-        state.mode = "STEP";
-        state.planApproved = true;
-        executeNextSkillStep();
-      });
-      document.getElementById("modeReplayBtn").addEventListener("click", () => {
-        stopAutoRun();
-        state.mode = "REPLAY";
-        const expected = computeActionLogHash(state.transcript);
-        appendChat("REPLAY [C38]", `Re-verified ${state.transcript.length} recorded turn(s). SHA-256 action-log hash matches: <b>${expected.slice(0, 24)}...</b>`, "success");
-        renderAll();
-      });
-
-      // Plan execution controls
-      document.getElementById("approvePlanBtn").addEventListener("click", () => {
-        state.planApproved = true;
-        state.mode = "RUN";
-        appendChat("OPERATOR", "Approved skill plan (D11). Ready to step or auto-run.", "success");
-        renderAll();
-      });
-      document.getElementById("stepSkillBtn").addEventListener("click", () => {
-        state.planApproved = true;
-        state.mode = "STEP";
-        executeNextSkillStep();
-      });
-      document.getElementById("runLoopBtn").addEventListener("click", () => {
-        startAutoRun();
-      });
-
-      // Chat Form Submission
-      document.getElementById("chatForm").addEventListener("submit", (e) => {
+      document.getElementById("chatForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const text = document.getElementById("chatInput").value.trim();
         if (!text) return;
-        appendChat("OPERATOR", text);
-        state.plan = buildSkillPlanFromPrompt(text);
-        state.completedStepIndices.clear();
-        state.currentStepIdx = 0;
-        state.planApproved = false;
-        appendChat(
-          "PLANNER [C31]",
-          `Generated ${state.plan.length}-step coordinate-free skill plan: ${state.plan.map(s => `${s.skill}(${s.target_id})`).join(" &rarr; ")}. Awaiting operator approval.`
-        );
-        renderAll();
+        await apiFetch("/api/task", {
+          method: "POST",
+          body: JSON.stringify({ text })
+        });
+        await fetchConfigAndState();
       });
 
-      // Test I1 Coordinate Violation Guardrail
-      document.getElementById("injectCoordViolationBtn").addEventListener("click", () => {
-        appendChat(
-          "SCHEMA GUARD [I1]",
-          `SkillValidationError: Invariant I1 violation — rejected tool call <code>move_above({"target_id":"red_block_1","x":0.02,"y":0.20})</code> containing forbidden coordinate keys ['x', 'y'].`,
-          "error"
-        );
+      document.getElementById("approvePlanBtn").addEventListener("click", async () => {
+        await apiFetch("/api/approve", { method: "POST", body: JSON.stringify({}) });
+        await fetchConfigAndState();
       });
 
-      // Test Safety Supervisor T08 (Table Hit) and T07 (Out of Bounds)
-      document.getElementById("testTableHitBtn").addEventListener("click", () => {
-        const badIk = inverseKinematics([0.0, 0.20, -0.005]);
-        const v = badIk.ok
-          ? checkSafety(badIk.pose, state.pose.gripper, true)
-          : { approved: false, reason: "table_plane", detail: "target z=-5.0mm violates table plane clearance +2.0mm" };
-        state.lastSafetyVerdict = v;
-        state.safetyRejections += 1;
-        state.predicates.table_hit = true;
-        appendChat("SAFETY [T08]", `Rejected table-plane violation before execution: ${v.detail}`, "error");
-        renderAll();
+      document.getElementById("stepSkillBtn").addEventListener("click", async () => {
+        await apiFetch("/api/step", { method: "POST", body: JSON.stringify({}) });
+        await fetchConfigAndState();
       });
 
-      document.getElementById("testOutBoundsBtn").addEventListener("click", () => {
-        const badIk = inverseKinematics([0.19, 0.25, 0.05]);
-        const v = badIk.ok
-          ? checkSafety(badIk.pose, state.pose.gripper, true)
-          : { approved: false, reason: "workspace_bounds", detail: "target outside 0.10m workspace disk" };
-        state.lastSafetyVerdict = v;
-        state.safetyRejections += 1;
-        appendChat("SAFETY [T07]", `Rejected out-of-bounds pose before execution: ${v.detail}`, "error");
-        renderAll();
+      document.getElementById("runLoopBtn").addEventListener("click", async () => {
+        await apiFetch("/api/run", { method: "POST", body: JSON.stringify({}) });
+        await fetchConfigAndState();
       });
 
-      // Home Pose Button
-      document.getElementById("homeArmBtn").addEventListener("click", () => {
-        if (state.estopped) return;
-        state.pose = { ...ROBOT_SPEC.home_pose };
-        state.lastSafetyVerdict = { approved: true, reason: "ok", detail: "home" };
-        renderAll();
+      document.getElementById("estopBtn").addEventListener("click", async () => {
+        const nextEstop = !(ui.state && ui.state.estop);
+        await apiFetch("/api/estop", {
+          method: "POST",
+          body: JSON.stringify({ estop: nextEstop })
+        });
+        await fetchConfigAndState();
       });
 
-      // Replay Hash Verifier & Tamper Detector (T50 / T51)
-      document.getElementById("verifyReplayBtn").addEventListener("click", () => {
-        if (state.tampered) {
-          appendChat("REPLAY [T51]", "TamperedTranscriptError: action-log SHA-256 mismatch detected!", "error");
-        } else {
-          const h = computeActionLogHash(state.transcript);
-          appendChat("REPLAY [T50]", `Verified transcript integrity: SHA-256 = ${h.slice(0, 32)}...`, "success");
-        }
+      document.getElementById("refreshFrameBtn").addEventListener("click", refreshCameraFrame);
+
+      document.getElementById("simViewIsoBtn").addEventListener("click", () => {
+        ui.simViewMode = "ISO";
+        drawSimCanvas();
+      });
+      document.getElementById("simViewSideBtn").addEventListener("click", () => {
+        ui.simViewMode = "SIDE";
+        drawSimCanvas();
+      });
+      document.getElementById("simViewTopBtn").addEventListener("click", () => {
+        ui.simViewMode = "TOP";
+        drawSimCanvas();
       });
 
-      document.getElementById("tamperTestBtn").addEventListener("click", () => {
-        state.tampered = true;
-        appendChat("REPLAY [T51]", "TamperedTranscriptError: Forged outcome injected into transcript; recomputed hash disagrees with recorded episode SHA-256!", "error");
-      });
-
-      // E-STOP Button (D18 / C39)
-      document.getElementById("estopBtn").addEventListener("click", () => {
-        state.estopped = !state.estopped;
-        if (state.estopped) {
-          stopAutoRun();
-          const seq = state.fwSeq++;
-          appendNdjsonLog({ cmd: "estop", seq }, { ok: true, seq, state: "ESTOP_HOLD" });
-          appendChat("E-STOP [C39]", "First-class E-STOP triggered within 1 control cycle! Trajectory cancelled; holding last joint pose (PWM active, D18).", "error");
-        } else {
-          const seq = state.fwSeq++;
-          appendNdjsonLog({ cmd: "resume", seq }, { ok: true, seq, state: "IDLE" });
-          appendChat("E-STOP [C39]", "Deliberate E-STOP resume acknowledged. Controller returned to IDLE.", "success");
-        }
-        renderAll();
-      });
-
-      // Keyboard Shortcuts: p (approve), s (step), e (e-stop), r (replay)
       window.addEventListener("keydown", (e) => {
         if (document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) {
           return;
         }
         const k = e.key.toLowerCase();
-        if (k === "p") {
-          document.getElementById("approvePlanBtn").click();
-        } else if (k === "s") {
-          document.getElementById("stepSkillBtn").click();
-        } else if (k === "e") {
-          document.getElementById("estopBtn").click();
-        } else if (k === "r") {
-          document.getElementById("modeReplayBtn").click();
-        }
+        if (k === "p") document.getElementById("approvePlanBtn").click();
+        else if (k === "s" && !document.getElementById("stepSkillBtn").disabled) document.getElementById("stepSkillBtn").click();
+        else if (k === "e") document.getElementById("estopBtn").click();
       });
 
-      resetEpisode();
+      fetchConfigAndState();
+      ui.pollTimer = setInterval(fetchConfigAndState, 1500);
     });
   </script>
 </body>

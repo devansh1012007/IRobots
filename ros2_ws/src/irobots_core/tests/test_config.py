@@ -1,4 +1,4 @@
-"""Tests for the configuration loader (PLAN:irobots-v2:C11).
+"""Tests for the configuration loader (PLAN:irobots-v2:C11, C67-F4).
 
 The legacy repo had two copies of ``config.py`` with hardcoded Tailscale IPs
 and a single magic number that meant different things in different files.
@@ -49,14 +49,18 @@ def test_env_or_treats_an_empty_string_as_unset() -> None:
 
 
 def test_no_endpoint_is_hardcoded_in_the_core(repo_root: Path) -> None:
-    """T12: every endpoint comes from config or the environment."""
-    core = repo_root / "ros2_ws" / "src" / "irobots_core" / "irobots_core"
+    """T12: every endpoint in irobots_core and irobots_nodes comes from config or the environment."""
+    search_roots = (
+        repo_root / "ros2_ws" / "src" / "irobots_core" / "irobots_core",
+        repo_root / "ros2_ws" / "src" / "irobots_nodes" / "irobots_nodes",
+    )
     offenders: list[str] = []
-    for path in sorted(core.rglob("*.py")):
-        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            if _ENDPOINT_RE.search(line):
-                offenders.append(f"{path.relative_to(repo_root)}:{lineno}: {line.strip()}")
-    assert not offenders, "hardcoded endpoints in the core:\n" + "\n".join(offenders)
+    for root in search_roots:
+        for path in sorted(root.rglob("*.py")):
+            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                if _ENDPOINT_RE.search(line):
+                    offenders.append(f"{path.relative_to(repo_root)}:{lineno}: {line.strip()}")
+    assert not offenders, "hardcoded endpoints in source:\n" + "\n".join(offenders)
 
 
 def test_the_core_does_not_import_ros(repo_root: Path) -> None:
