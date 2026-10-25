@@ -1,0 +1,29 @@
+// AUTO-GENERATED FROM config/robot.yaml BY tools/gen_firmware_config.py
+// DO NOT EDIT BY HAND — PLAN:irobots-v2:C49
+#pragma once
+
+#define PCA9685_ADDRESS 0x40
+#define SERVO_PULSE_MIN_US 500
+#define SERVO_PULSE_MAX_US 2400
+
+#define CH_BASE_YAW 0
+#define CH_SHOULDER_PITCH 1
+#define CH_ELBOW_PITCH 2
+#define CH_WRIST_YAW 3
+#define CH_WRIST_PITCH 4
+#define CH_GRIPPER 5
+
+#define BASE_YAW_MIN_DEG -170.0f
+#define BASE_YAW_MAX_DEG 170.0f
+#define SHOULDER_PITCH_MIN_DEG -20.0f
+#define SHOULDER_PITCH_MAX_DEG 95.0f
+#define ELBOW_PITCH_MIN_DEG -160.0f
+#define ELBOW_PITCH_MAX_DEG 160.0f
+#define WRIST_PITCH_MIN_DEG -150.0f
+#define WRIST_PITCH_MAX_DEG 150.0f
+#define WRIST_YAW_MIN_DEG -170.0f
+#define WRIST_YAW_MAX_DEG 170.0f
+
+#define GRIPPER_MIN_M 0.0080f
+#define GRIPPER_MAX_M 0.0700f
+#define WATCHDOG_TIMEOUT_MS 500
