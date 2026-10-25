@@ -19,13 +19,13 @@ are the reason the hard problems were found on day one instead of in week six.
 | C01 | Grasp rate, 4 cm cube, ground-truth poses | >= 80% at mu=0.5 | **100%** (50/50) | **PASS** |
 | C01b | Grasp rate across the friction range | informative | 0% at mu=0.1; 100% at mu >= 0.2 | see below |
 | C01c | Analytic FK vs simulated FK | < 1e-6 m | **0.0000 um** over 300 random poses | **PASS** |
-| C02 | Detection rate and XY error on rendered frames | >= 95%, p95 <= 8 mm | *not yet run* | PENDING |
+| C02 | Detection rate and XY error on rendered frames | >= 95%, p95 <= 8 mm | **100.0%** (50/50), D/2-corrected XY mean **3.8 mm**, p95 **7.0 mm** (raw mean 21.4 mm, p95 22.1 mm) | **PASS** |
 | C03 | LLM tool-call schema validity | >= 95%, <= 5 s median | *blocked: no `OPENROUTER_API_KEY` in the environment* | BLOCKED |
 | C04 | Peak RSS of the full stack | < 2500 MB | **1815 MB** | **PASS** |
 | C05 | This report | - | - | done |
 
-**C01, C02 and C04 are the gates that gate the project. C01 and C04 pass. C02
-is the next thing to run; C03 needs an API key.**
+**C01, C02 and C04 are the gates that gate the project. C01, C02 and C04 all pass.
+C03 needs an API key (gates Phase 4 live-LLM evaluation only).**
 
 ---
 
@@ -140,6 +140,25 @@ And one benchmark bug:
 8. **The settle criterion ignored the fingers**, so a "close the jaws" phase
    returned after ~25 steps - long before the jaws had closed - and the lift
    failed for a reason that had nothing to do with the grasp.
+
+---
+
+## C02 - the perception gate
+
+`spike/perception_bench.py` (`PLAN:irobots-v2:C02, C05`). Evaluated over the same 50 seeded poses as C01's `mu=0.5` run (`seed=500`), comparing raw front-bottom-edge back-projection, D/2-corrected back-projection, and 4-point `MarkerCalibration`:
+
+| Metric | Raw bottom-edge | D/2-corrected (analytic) | D/2-corrected (4-pt marker) | Gate threshold |
+|---|---|---|---|---|
+| Detection rate (`GeometricDetector`) | **100.0%** (50/50) | **100.0%** (50/50) | **100.0%** (50/50) | >= 95.0% |
+| Mean XY error | 21.4 mm | **3.8 mm** | **3.8 mm** | — |
+| p95 XY error | 22.1 mm | **7.0 mm** | **7.0 mm** | <= 8.0 mm |
+
+### Two camera-frame bugs caught by C02
+
+1. **Upside-down camera roll (`xyaxes` in `mujoco_model.py:look_at_frame`)**: `x_axis` was computed as `cross(z_axis, up)` instead of `cross(forward, up)`, rolling the camera 180 degrees so that objects further from the camera appeared *lower* in the image and the bounding box bottom row corresponded to the cube's back-top edge `(x, y + D/2, H)` rather than its front-bottom contact edge `(x, y - D/2, 0)`.
+2. **Image row `v` sign in `CameraModel.ray` and `CameraModel.project` (`homography.py`)**: image row `v` increases downward (`0` at top, `height` at bottom), requiring `-(v - cy) / f` along `+y_axis`. Fixing both aligns the camera frame and brings D/2-corrected p95 XY error from 52.7 mm down to **7.0 mm** (raw mean 21.4 mm -> 3.8 mm after subtracting the D/2 = 20 mm front-edge bias).
+
+Raw data: `runs/spike/perception/perception_bench.json`.
 
 ---
 
