@@ -1,4 +1,4 @@
-"""Tests for homography, camera projection, and contact correction (PLAN:irobots-v2:C02, C13).
+"""Tests for homography, camera projection, and contact correction (PLAN:irobots-v2:C02, C13, C67-F1).
 
 Tests T15, T16, T17 plus camera frame orientation and D/2 contact correction.
 """
@@ -6,6 +6,7 @@ Tests T15, T16, T17 plus camera frame orientation and D/2 contact correction.
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import numpy as np
 import pytest
@@ -19,19 +20,21 @@ from irobots_core.perception.homography import (
 from irobots_core.sim.mujoco_model import look_at_frame
 
 
-def _make_camera(scene: dict) -> CameraModel:
+def _make_camera(scene: dict[str, Any]) -> CameraModel:
     cam_cfg = scene["camera"]
+    pos = cam_cfg["position"]
+    tgt = cam_cfg["target"]
     return CameraModel(
-        position=tuple(float(c) for c in cam_cfg["position"]),  # type: ignore[arg-type]
-        target=tuple(float(c) for c in cam_cfg["target"]),  # type: ignore[arg-type]
+        position=(float(pos[0]), float(pos[1]), float(pos[2])),
+        target=(float(tgt[0]), float(tgt[1]), float(tgt[2])),
         fov_deg=float(cam_cfg["hfov_deg"]),
         width=int(cam_cfg["width"]),
         height=int(cam_cfg["height"]),
     )
 
 
-def test_camera_frame_is_right_side_up(scene: dict) -> None:
-    """C02 / C13: camera +X is right (+world X) and image row v increases downward (-camera Y)."""
+def test_camera_frame_is_right_side_up(scene: dict[str, Any]) -> None:
+    """C02 / C13 / C67-F1: camera +X is right (+world X) and image row v increases downward (-camera Y)."""
     camera = _make_camera(scene)
     rot = camera.rotation
     assert rot[0, 0] > 0.99, f"camera X axis is inverted: {rot[:, 0]}"
@@ -47,7 +50,21 @@ def test_camera_frame_is_right_side_up(scene: dict) -> None:
     assert v_near > v_far, f"near point should have larger row v than far point: {v_near} <= {v_far}"
 
 
-def test_analytic_calibration_recovers_known_xy_exactly(scene: dict) -> None:
+def test_world_plus_x_projects_to_larger_u_and_farther_y_to_smaller_v(scene: dict[str, Any]) -> None:
+    """C67-F1 regression: world point at +X appears at larger u, and point farther from camera (+Y) at smaller v."""
+    camera = _make_camera(scene)
+    u_neg_x, v_neg_x = camera.project((-0.05, 0.20, 0.0))
+    u_pos_x, v_pos_x = camera.project((+0.05, 0.20, 0.0))
+    assert u_pos_x > u_neg_x, f"+X world point must project to larger column u: {u_pos_x} <= {u_neg_x}"
+    assert abs(v_pos_x - v_neg_x) < 1e-6
+
+    u_near_y, v_near_y = camera.project((0.0, 0.14, 0.0))
+    u_far_y, v_far_y = camera.project((0.0, 0.26, 0.0))
+    assert v_far_y < v_near_y, f"farther world point (+Y) must project to smaller row v: {v_far_y} >= {v_near_y}"
+    assert abs(u_far_y - u_near_y) < 1e-6
+
+
+def test_analytic_calibration_recovers_known_xy_exactly(scene: dict[str, Any]) -> None:
     """T15: analytic calibration recovers known table-plane XY to floating-point precision."""
     camera = _make_camera(scene)
     cal = AnalyticCalibration(camera=camera, table_z=0.0)
@@ -60,7 +77,7 @@ def test_analytic_calibration_recovers_known_xy_exactly(scene: dict) -> None:
         assert math.hypot(rx - x, ry - y) < 1e-9
 
 
-def test_marker_calibration_matches_analytic_on_synthetic_frames(scene: dict) -> None:
+def test_marker_calibration_matches_analytic_on_synthetic_frames(scene: dict[str, Any]) -> None:
     """T16: marker calibration error vs analytic on synthetic points is well within 8 mm."""
     camera = _make_camera(scene)
     analytic = AnalyticCalibration(camera=camera, table_z=0.0)
@@ -88,7 +105,7 @@ def test_marker_calibration_matches_analytic_on_synthetic_frames(scene: dict) ->
         assert math.hypot(mx - ax, my - ay) < 0.001
 
 
-def test_marker_calibration_refuses_high_rms(scene: dict) -> None:
+def test_marker_calibration_refuses_high_rms(scene: dict[str, Any]) -> None:
     """T17: MarkerCalibration.fit refuses when reprojection RMS exceeds threshold."""
     camera = _make_camera(scene)
     marker_table = [
@@ -105,7 +122,7 @@ def test_marker_calibration_refuses_high_rms(scene: dict) -> None:
         MarkerCalibration.fit(corrupted_img, marker_table, max_rms_m=0.005)
 
 
-def test_contact_correction_removes_front_edge_bias(scene: dict) -> None:
+def test_contact_correction_removes_front_edge_bias(scene: dict[str, Any]) -> None:
     """D.3 / C02: back-projecting the front-bottom edge + contact_correction lands within 8 mm."""
     camera = _make_camera(scene)
     analytic = AnalyticCalibration(camera=camera, table_z=0.0)

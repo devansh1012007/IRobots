@@ -17,7 +17,7 @@ the round-trip test fails):
 * ``wrist_yaw`` is at the tool tip and rotates about the tool's Z, i.e. the
   approach axis.
 
-PLAN:irobots-v2:C21
+PLAN:irobots-v2:C21 PLAN:irobots-v2:C67-F1
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def look_at_frame(position: Sequence[float], target: Sequence[float]) -> tuple[s
     if abs(float(np.dot(z_axis, up))) > 0.999:
         # Looking straight up or down: pick a different reference.
         up = np.array([0.0, 1.0, 0.0])
-    x_axis = np.cross(z_axis, up)
+    x_axis = np.cross(forward, up)
     x_norm = np.linalg.norm(x_axis)
     if x_norm < 1e-9:
         raise ValueError("degenerate camera frame")
@@ -120,12 +120,14 @@ def camera_from_scene(scene_cfg: Mapping[str, Any]) -> CameraSpec:
     cam = scene_cfg.get("camera")
     if not isinstance(cam, dict):
         raise ValueError("scene config has no 'camera' mapping")
-    position = tuple(float(c) for c in cam["position"])
-    target = tuple(float(c) for c in cam["target"])
+    pos_raw = cam["position"]
+    tgt_raw = cam["target"]
+    position = (float(pos_raw[0]), float(pos_raw[1]), float(pos_raw[2]))
+    target = (float(tgt_raw[0]), float(tgt_raw[1]), float(tgt_raw[2]))
     return CameraSpec(
         name=str(cam.get("name", "camera")),
-        position=position,  # type: ignore[arg-type]
-        target=target,  # type: ignore[arg-type]
+        position=position,
+        target=target,
         hfov_deg=float(cam["hfov_deg"]),
         width=int(cam["width"]),
         height=int(cam["height"]),

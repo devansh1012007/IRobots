@@ -21,14 +21,15 @@ resting on a table is its FRONT bottom edge, so back-projecting it lands
 D/2 toward the camera, not on the footprint centre. :func:`contact_correction`
 computes that offset, and the correction is applied, not assumed away.
 
-PLAN:irobots-v2:C13
+PLAN:irobots-v2:C13 PLAN:irobots-v2:C67-F1
 """
 
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Final, Protocol, Sequence
+from typing import Final, Protocol
 
 import numpy as np
 
@@ -89,7 +90,7 @@ class CameraModel:
         up = np.array([0.0, 0.0, 1.0])
         if abs(float(np.dot(z_axis, up))) > 0.999:
             up = np.array([0.0, 1.0, 0.0])
-        x_axis = np.cross(z_axis, up)
+        x_axis = np.cross(forward, up)
         x_axis /= np.linalg.norm(x_axis)
         y_axis = np.cross(z_axis, x_axis)
         return np.column_stack([x_axis, y_axis, z_axis])
@@ -98,9 +99,10 @@ class CameraModel:
         """The world-space direction of the ray through pixel (u, v)."""
         cx, cy = self.principal_point
         f = self.focal_px
-        local = np.array([(u - cx) / f, (v - cy) / f, -1.0])
-        direction = self.rotation @ local
-        return direction / np.linalg.norm(direction)
+        local = np.array([(u - cx) / f, -(v - cy) / f, -1.0], dtype=float)
+        direction = np.asarray(self.rotation @ local, dtype=float)
+        norm = float(np.linalg.norm(direction))
+        return np.asarray(direction / norm, dtype=float)
 
     def project(self, point: Sequence[float]) -> tuple[float, float]:
         """Project a world point into the image. The inverse of ``ray``."""
@@ -110,7 +112,7 @@ class CameraModel:
             raise ValueError("point is behind the camera")
         cx, cy = self.principal_point
         f = self.focal_px
-        return (float(cx + f * cam[0] / -cam[2]), float(cy + f * cam[1] / -cam[2]))
+        return (float(cx + f * cam[0] / -cam[2]), float(cy - f * cam[1] / -cam[2]))
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,7 +175,7 @@ class MarkerCalibration:
         *,
         max_rms_m: float = DEFAULT_MAX_RMS_M,
         min_points: int = 4,
-    ) -> "MarkerCalibration":
+    ) -> MarkerCalibration:
         """Fit the homography, and refuse a fit that is not good enough.
 
         :param image_points: pixel coordinates of the markers.
