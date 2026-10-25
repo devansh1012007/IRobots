@@ -311,6 +311,7 @@ def main() -> int:
     summary = {
         "trials": len(records),
         "render_backend": render_backend,
+        "sim_backend": "mujoco" if render_backend == "mujoco" else "fallback sim",
         "detection_rate": rate,
         "mean_detect_s": float(np.mean(detect_times)) if detect_times else 0.0,
         "p95_detect_s": p95(detect_times),

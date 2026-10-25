@@ -124,6 +124,7 @@ def run_rq2(*, n_frames: int = 200, out_path: str | Path | None = None) -> dict[
 
     report: dict[str, Any] = {
         "rq": "RQ2",
+        "sim_backend": "fallback sim",
         "question": "How much does monocular height uncertainty cost, and does verified probing recover it?",
         "frozen_frames": n_frames,
         "sc2_frozen_200_frame_set": {

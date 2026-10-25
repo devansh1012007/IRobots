@@ -1,0 +1,253 @@
+{
+  "trials": 30,
+  "sim_backend": "fallback sim",
+  "success_rate_privileged": 1.0,
+  "success_rate_perceived": 1.0,
+  "gate": {
+    "criterion": "SC1",
+    "threshold": 0.8,
+    "passed": true
+  },
+  "episodes": [
+    {
+      "seed": 0,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.0016832275715156849,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 1,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.03999999999999995,
+      "slip_m": 0.006251806747596194,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 2,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.0010444918115863804,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 3,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.0013218078281790303,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 4,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.0058122223744971994,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 5,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.040000000000000036,
+      "slip_m": 0.003429293125072733,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 6,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.002284699411423097,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 7,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000005,
+      "slip_m": 0.005531427029795625,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 8,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.040000000000000036,
+      "slip_m": 0.005399474314308037,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 9,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.03999999999999995,
+      "slip_m": 0.0009430452626147172,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 10,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.040000000000000036,
+      "slip_m": 0.002508037305091148,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 11,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.002291729856456027,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 12,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.004339221490404475,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 13,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.005887130632918446,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 14,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.0036383427795660364,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 15,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.03999999999999998,
+      "slip_m": 0.003498425953292455,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 16,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.003935780397897852,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 17,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000002,
+      "slip_m": 0.004128143650199997,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 18,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000002,
+      "slip_m": 0.001112615585260744,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 19,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.005822786166433179,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 20,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.03999999999999998,
+      "slip_m": 0.003757170955096698,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 21,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.005322676525379722,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 22,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000002,
+      "slip_m": 0.003089327160215574,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 23,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.03999999999999995,
+      "slip_m": 0.003526419692598119,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 24,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.002689857854985418,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 25,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.0033730754964017523,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 26,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000001,
+      "slip_m": 0.0013591817834051813,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 27,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.04000000000000002,
+      "slip_m": 0.0016408327270566,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 28,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.006582156818551451,
+      "safety_rejections": 0
+    },
+    {
+      "seed": 29,
+      "task_success_privileged": true,
+      "task_success_perceived": true,
+      "bottom_clearance_m": 0.039999999999999994,
+      "slip_m": 0.0014302397384654889,
+      "safety_rejections": 0
+    }
+  ]
+}

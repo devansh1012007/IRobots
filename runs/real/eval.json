@@ -1,0 +1,5 @@
+{
+  "status": "pending_operator_capture",
+  "frames_evaluated": 0,
+  "note": "data/real/manifest.jsonl is absent; awaiting operator ESP32-CAM capture per docs/hardware/CAMERA_CAPTURE.md"
+}

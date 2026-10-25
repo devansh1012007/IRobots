@@ -23,7 +23,7 @@ from irobots_core.perception.height import HeightEstimator
 from irobots_core.perception.homography import AnalyticCalibration, CameraModel
 from irobots_core.robot_model import load_robot
 from irobots_core.safety import SafetySupervisor
-from irobots_core.sim.mujoco_sim import create_sim
+from irobots_core.sim.mujoco_sim import create_sim, detect_sim_backend_label
 from irobots_core.sim.scene_builder import SHARED_EVAL_SEEDS, build_seeded_scene, load_task_spec
 
 from .stats import STATISTICAL_POWER_NOTE, bootstrap_ci, mcnemar_paired_test
@@ -139,6 +139,7 @@ def run_rq1(*, out_path: str | Path | None = None) -> dict[str, Any]:
 
     report: dict[str, Any] = {
         "rq": "RQ1",
+        "sim_backend": detect_sim_backend_label(),
         "question": "Does a skill-based action encoding beat raw-coordinate tool calling, under calibration error?",
         "matched_controls": ["Z policy", "perception", "safety supervisor", "turn budget", "30 paired scenes"],
         "statistical_power_note": STATISTICAL_POWER_NOTE,

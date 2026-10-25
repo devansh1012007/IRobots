@@ -1,0 +1,61 @@
+{
+  "rq": "RQ3",
+  "sim_backend": "fallback sim",
+  "question": "What are the failure modes of a closed-loop LLM manipulator, and which are recoverable?",
+  "sc4_unattended_suite": {
+    "total_episodes": 150,
+    "completed_episodes": 150,
+    "hangs": 0,
+    "wall_seconds": 51.17227257900231,
+    "gate": {
+      "criterion": "SC4",
+      "min_episodes_required": 150,
+      "max_hangs_allowed": 0,
+      "passed": true
+    }
+  },
+  "failure_taxonomy_counts": {
+    "wrong_object": 0,
+    "wrong_target": 0,
+    "grasp_miss": 0,
+    "collision": 0,
+    "invalid_tool_call": 0,
+    "planner_loop": 0,
+    "timeout": 0,
+    "knocked_away": 0
+  },
+  "recoverability": {
+    "wrong_object": {
+      "recoverable": true,
+      "mechanism": "persistent tracker ID + plan approval rejection"
+    },
+    "wrong_target": {
+      "recoverable": true,
+      "mechanism": "unknown_target refusal in worker"
+    },
+    "grasp_miss": {
+      "recoverable": true,
+      "mechanism": "verification predicate object_lifted=False triggers replan"
+    },
+    "collision": {
+      "recoverable": true,
+      "mechanism": "SafetySupervisor rejects table_plane / self_collision pre-execution"
+    },
+    "invalid_tool_call": {
+      "recoverable": true,
+      "mechanism": "1 repair retry then scripted fallback"
+    },
+    "planner_loop": {
+      "recoverable": true,
+      "mechanism": "RepeatActionEscalation after 2 identical (skill, target) attempts"
+    },
+    "timeout": {
+      "recoverable": false,
+      "mechanism": "per-skill and per-episode deadlines terminate trial cleanly"
+    },
+    "knocked_away": {
+      "recoverable": false,
+      "mechanism": "table rim predicate detects object outside workspace"
+    }
+  }
+}

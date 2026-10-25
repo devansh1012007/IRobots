@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from irobots_core.config import REPO_ROOT
+from irobots_core.sim.mujoco_sim import detect_sim_backend_label
 from irobots_core.sim.scene_builder import SHARED_EVAL_SEEDS
 
 from .runner import EvalRunner
@@ -39,6 +40,7 @@ def run_rq3(*, out_path: str | Path | None = None) -> dict[str, Any]:
     taxonomy_counts = {mode: 0 for mode in FAILURE_TAXONOMY}
     report: dict[str, Any] = {
         "rq": "RQ3",
+        "sim_backend": detect_sim_backend_label(),
         "question": "What are the failure modes of a closed-loop LLM manipulator, and which are recoverable?",
         "sc4_unattended_suite": sc4_summary,
         "failure_taxonomy_counts": taxonomy_counts,

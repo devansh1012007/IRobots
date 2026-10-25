@@ -1,0 +1,35 @@
+{
+  "rq": "RQ2",
+  "sim_backend": "fallback sim",
+  "question": "How much does monocular height uncertainty cost, and does verified probing recover it?",
+  "frozen_frames": 200,
+  "sc2_frozen_200_frame_set": {
+    "detection_rate": 1.0,
+    "mean_xy_error_mm": 4.158809576820811,
+    "p95_xy_error_mm": 7.833528951066349,
+    "gate": {
+      "criterion": "SC2",
+      "detection_rate_required": 0.95,
+      "p95_xy_error_mm_required": 8.0,
+      "passed": true
+    }
+  },
+  "height_tiers_abs_error_mm": {
+    "tier_p_probe": {
+      "mean_mm": 1.0000000000000389,
+      "p95_mm": 2.0000000000000155,
+      "extra_steps_cost": 1
+    },
+    "tier_c_class_prior": {
+      "mean_mm": 24.999999999999996,
+      "p95_mm": 49.99999999999999,
+      "extra_steps_cost": 0
+    },
+    "tier_v_vanishing_point_disabled": {
+      "mean_mm": 26.22647559558127,
+      "p95_mm": 30.969335848470433,
+      "extra_steps_cost": 0,
+      "note": "Confounded by footprint depth D*sin(theta); disabled by default"
+    }
+  }
+}

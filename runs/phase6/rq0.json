@@ -1,0 +1,38 @@
+{
+  "rq": "RQ0",
+  "sim_backend": "fallback sim",
+  "question": "How much does the LLM add over a hand-written skill script, per unit of latency and cost, and how often does it loop or mis-select an identity?",
+  "n_paired_scenes": 30,
+  "statistical_power_note": "With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend.",
+  "scripted_policy": {
+    "task_success_privileged": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "n": 30
+    },
+    "task_success_perceived": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "n": 30
+    },
+    "loop_rate": 0.0,
+    "mis_select_rate": 0.0,
+    "cost_usd_per_episode": 0.0
+  },
+  "live_llm_status": "blocked_no_openrouter_api_key (scripted profile evaluated; export OPENROUTER_API_KEY to run hosted LLM)",
+  "mcnemar_scripted_self_check": {
+    "n_pairs": 30,
+    "both_pass": 30,
+    "b_a_only": 0,
+    "c_b_only": 0,
+    "both_fail": 0,
+    "rate_a": 1.0,
+    "rate_b": 1.0,
+    "delta_pp": 0.0,
+    "p_value": 1.0,
+    "conclusive": false,
+    "power_note": "With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend."
+  }
+}

@@ -113,6 +113,10 @@ class MuJoCoSim:
     # -- state ------------------------------------------------------------
 
     @property
+    def sim_backend_label(self) -> str:
+        return "mujoco"
+
+    @property
     def total_steps(self) -> int:
         """How many physics steps have been taken since the last reset."""
         return self._total_steps
@@ -352,6 +356,10 @@ class DeterministicKinematicSim:
             self._obj_quat[name] = np.array([1.0, 0.0, 0.0, 0.0], dtype=float)
 
     @property
+    def sim_backend_label(self) -> str:
+        return "fallback sim"
+
+    @property
     def total_steps(self) -> int:
         return self._total_steps
 
@@ -574,3 +582,13 @@ def create_sim(
         return MuJoCoSim(model, scene_cfg, objects)
     except Exception:
         return DeterministicKinematicSim(model, scene_cfg, objects)
+
+
+def detect_sim_backend_label() -> str:
+    """Return 'mujoco' if the MuJoCo C library is importable, otherwise 'fallback sim' (C67-F6)."""
+    try:
+        import mujoco as _mj  # noqa: F401
+
+        return "mujoco"
+    except Exception:  # noqa: BLE001
+        return "fallback sim"

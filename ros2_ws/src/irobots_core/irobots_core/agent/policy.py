@@ -22,7 +22,7 @@ from ..perception.outcomes import SceneObservation, evaluate_outcome
 from ..perception.tracker import ObjectTracker, TrackerConfig
 from ..robot_model import RobotModel
 from ..safety import SafetySupervisor
-from ..sim.mujoco_sim import create_sim
+from ..sim.mujoco_sim import create_sim, detect_sim_backend_label
 from ..sim.scene_builder import SHARED_EVAL_SEEDS, build_seeded_scene, load_task_spec
 from ..skills import SkillCall
 
@@ -210,6 +210,7 @@ def evaluate_scripted_policy_l1(
     perc_rate = sum(1 for r in results if r["task_success_perceived"]) / n if n else 0.0
     summary: dict[str, Any] = {
         "trials": n,
+        "sim_backend": detect_sim_backend_label(),
         "success_rate_privileged": priv_rate,
         "success_rate_perceived": perc_rate,
         "gate": {

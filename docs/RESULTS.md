@@ -1,6 +1,6 @@
 # Results
 
-The research report (`PLAN:irobots-v2:C47`). Every number in this file is generated programmatically by `tools/generate_results_md.py` from the JSON artifacts under `runs/` — nothing is transcribed by hand.
+The research report (`PLAN:irobots-v2:C47`, `PLAN:irobots-v2:C67-F6`). Every number in this file is generated programmatically by `tools/generate_results_md.py` from the JSON artifacts under `runs/` — nothing is transcribed by hand. Every result produced by `DeterministicKinematicSim` rather than C MuJoCo is explicitly labelled `fallback sim`.
 
 ## What is being asked
 
@@ -32,13 +32,13 @@ Full detail and method: [`../spike/REPORT.md`](../spike/REPORT.md).
 | 0.20 | 100.0% | 1.5 mm | 2.6 mm | 50 |
 | 0.50 | 100.0% | 1.7 mm | 2.6 mm | 50 |
 
-### Perception on rendered frames (C02) — `runs/spike/perception/perception_bench.json`
+### Perception on rendered frames (C02, `fallback sim`) — `runs/spike/perception/perception_bench.json`
 
-| Metric | Raw bottom-edge | D/2-corrected (analytic) | D/2-corrected (4-pt marker) | Gate |
-|---|---|---|---|---|
-| Detection rate (`perceived`) | 100.0% | **100.0%** | **100.0%** | >= 95% |
-| Mean XY error (`privileged`) | 21.4 mm | **3.8 mm** | **3.8 mm** | — |
-| p95 XY error (`privileged`) | 22.1 mm | **7.0 mm** | **7.0 mm** | <= 8.0 mm |
+| Metric | Raw bottom-edge | D/2-corrected (analytic) | D/2-corrected (4-pt marker) | Backend | Gate |
+|---|---|---|---|---|---|
+| Detection rate (`perceived`) | 100.0% | **100.0%** | **100.0%** | `fallback sim` | >= 95% |
+| Mean XY error (`privileged`) | 21.4 mm | **3.8 mm** | **3.8 mm** | `fallback sim` | — |
+| p95 XY error (`privileged`) | 22.1 mm | **7.0 mm** | **7.0 mm** | `fallback sim` | <= 8.0 mm |
 
 ### Memory budget (C04) — `runs/spike/mem/mem_bench.json`
 
@@ -47,42 +47,42 @@ Full detail and method: [`../spike/REPORT.md`](../spike/REPORT.md).
 
 ---
 
-## RQ0 - Scripted Reference Policy vs LLM (`runs/phase4/c34_sc1_l1.json`, `runs/phase6/rq0.json`)
+## RQ0 - Scripted Reference Policy vs LLM (`fallback sim`, `runs/phase4/c34_sc1_l1.json`, `runs/phase6/rq0.json`)
 
-| Condition | Task success (`privileged`) | Task success (`perceived`) | Loop rate | Mis-select rate | Cost / ep | Status |
-|---|---|---|---|---|---|---|
-| Scripted reference policy (SC1) | **100.0%** (30/30) | **100.0%** | 0.0% | 0.0% | $0.00 | **PASS** (gate >= 80%) |
-| Hosted OpenRouter LLM | — | — | — | — | — | `blocked_no_openrouter_api_key (scripted profile evaluated; export OPENROUTER_API_KEY to run hosted LLM)` |
-
----
-
-## RQ1 - Skills vs Raw-Coordinate Encoding Under Calibration Noise (`runs/phase6/rq1.json`)
-
-Both arms use the exact same Z policy, perception, safety supervisor, turn budget, and 30 paired scenes:
-
-| Calibration noise sigma | Skills (`privileged`, 95% CI) | Raw coords (`privileged`, 95% CI) | Delta (pp) | McNemar (b / c) | Two-sided p-value | Conclusive? |
-|---|---|---|---|---|---|---|
-| 0.0 mm | **100.0%** [100.0%, 100.0%] | 70.0% [53.3%, 86.7%] | +30.0 pp | 9 / 0 | 0.0039 | `yes` |
-| 4.0 mm | **100.0%** [100.0%, 100.0%] | 60.0% [43.3%, 76.7%] | +40.0 pp | 12 / 0 | 0.0005 | `yes` |
-| 8.0 mm | **83.3%** [66.7%, 96.7%] | 50.0% [33.3%, 66.7%] | +33.3 pp | 12 / 2 | 0.0129 | `yes` |
+| Condition | Simulator Backend | Task success (`privileged`) | Task success (`perceived`) | Loop rate | Mis-select rate | Cost / ep | Status |
+|---|---|---|---|---|---|---|---|
+| Scripted reference policy (SC1) | `fallback sim` | **100.0%** (30/30) | **100.0%** | 0.0% | 0.0% | $0.00 | **PASS** (`fallback sim`, gate >= 80%) |
+| Hosted OpenRouter LLM | `not run` | — | — | — | — | — | `blocked_no_openrouter_api_key (scripted profile evaluated; export OPENROUTER_API_KEY to run hosted LLM)` |
 
 ---
 
-## RQ2 - Monocular Height Estimation Tiers & SC2 200-Frame Set (`runs/phase6/rq2.json`)
+## RQ1 - Skills vs Raw-Coordinate Encoding Under Calibration Noise (`fallback sim`, `runs/phase6/rq1.json`)
 
-* **SC2 200-frame frozen set**: detection rate **100.0%** (gate >= 95%), XY error mean **4.16 mm**, p95 **7.83 mm** (gate <= 8.0 mm) -> **PASS**.
+Both arms use the exact same Z policy, perception, safety supervisor, turn budget, and 30 paired scenes (`sim_backend=fallback sim`):
 
-| Height Tier | Mean `|H_hat - H|` (`privileged`) | p95 `|H_hat - H|` (`privileged`) | Step padding cost | Status |
-|---|---|---|---|---|
-| Tier P — Jaw occlusion probe | **1.00 mm** | **2.00 mm** | +1 step | Primary (enabled) |
-| Tier C — Class height prior | 25.00 mm | 50.00 mm | +0 steps | Fallback (enabled) |
-| Tier V — Vanishing point silhouette | 26.23 mm | 30.97 mm | +0 steps | Disabled by default (Confounded by footprint depth D*sin(theta); disabled by default) |
+| Calibration noise sigma | Backend | Skills (`privileged`, 95% CI) | Raw coords (`privileged`, 95% CI) | Delta (pp) | McNemar (b / c) | Two-sided p-value | Conclusive? |
+|---|---|---|---|---|---|---|---|
+| 0.0 mm | `fallback sim` | **100.0%** [100.0%, 100.0%] | 70.0% [53.3%, 86.7%] | +30.0 pp | 9 / 0 | 0.0039 | `yes` |
+| 4.0 mm | `fallback sim` | **100.0%** [100.0%, 100.0%] | 60.0% [43.3%, 76.7%] | +40.0 pp | 12 / 0 | 0.0005 | `yes` |
+| 8.0 mm | `fallback sim` | **83.3%** [66.7%, 96.7%] | 50.0% [33.3%, 66.7%] | +33.3 pp | 12 / 2 | 0.0129 | `yes` |
 
 ---
 
-## RQ3 - Failure Taxonomy & SC4 Unattended Suite (`runs/phase6/rq3.json`)
+## RQ2 - Monocular Height Estimation Tiers & SC2 200-Frame Set (`fallback sim`, `runs/phase6/rq2.json`)
 
-* **SC4 unattended reliability**: **150/150** episodes completed unattended with **0 hangs** in `39.1 s` -> **PASS**.
+* **SC2 200-frame frozen set (`fallback sim`)**: detection rate **100.0%** (gate >= 95%), XY error mean **4.16 mm**, p95 **7.83 mm** (gate <= 8.0 mm) -> **PASS** (`fallback sim`).
+
+| Height Tier | Backend | Mean `|H_hat - H|` (`privileged`) | p95 `|H_hat - H|` (`privileged`) | Step padding cost | Status |
+|---|---|---|---|---|---|
+| Tier P — Jaw occlusion probe | `fallback sim` | **1.00 mm** | **2.00 mm** | +1 step | Primary (enabled) |
+| Tier C — Class height prior | `fallback sim` | 25.00 mm | 50.00 mm | +0 steps | Fallback (enabled) |
+| Tier V — Vanishing point silhouette | `fallback sim` | 26.23 mm | 30.97 mm | +0 steps | Disabled by default (Confounded by footprint depth D*sin(theta); disabled by default) |
+
+---
+
+## RQ3 - Failure Taxonomy & SC4 Unattended Suite (`fallback sim`, `runs/phase6/rq3.json`)
+
+* **SC4 unattended reliability (`fallback sim`)**: **150/150** episodes completed unattended with **0 hangs** in `51.2 s` -> **PASS** (`fallback sim`).
 
 | Failure mode | Count (150 scripted/skill episodes) | Recoverable? | Recovery / Guard Mechanism |
 |---|---|---|---|

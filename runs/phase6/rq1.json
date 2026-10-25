@@ -1,0 +1,99 @@
+{
+  "rq": "RQ1",
+  "sim_backend": "fallback sim",
+  "question": "Does a skill-based action encoding beat raw-coordinate tool calling, under calibration error?",
+  "matched_controls": [
+    "Z policy",
+    "perception",
+    "safety supervisor",
+    "turn budget",
+    "30 paired scenes"
+  ],
+  "statistical_power_note": "With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend.",
+  "sweeps": {
+    "sigma_0mm": {
+      "calib_noise_sigma_mm": 0.0,
+      "skills_privileged": {
+        "mean": 1.0,
+        "ci_low": 1.0,
+        "ci_high": 1.0,
+        "n": 30
+      },
+      "raw_coords_privileged": {
+        "mean": 0.7,
+        "ci_low": 0.5333333333333333,
+        "ci_high": 0.8666666666666667,
+        "n": 30
+      },
+      "mcnemar": {
+        "n_pairs": 30,
+        "both_pass": 21,
+        "b_a_only": 9,
+        "c_b_only": 0,
+        "both_fail": 0,
+        "rate_a": 1.0,
+        "rate_b": 0.7,
+        "delta_pp": 30.000000000000004,
+        "p_value": 0.00390625,
+        "conclusive": true,
+        "power_note": "With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend."
+      }
+    },
+    "sigma_4mm": {
+      "calib_noise_sigma_mm": 4.0,
+      "skills_privileged": {
+        "mean": 1.0,
+        "ci_low": 1.0,
+        "ci_high": 1.0,
+        "n": 30
+      },
+      "raw_coords_privileged": {
+        "mean": 0.6,
+        "ci_low": 0.43333333333333335,
+        "ci_high": 0.7666666666666667,
+        "n": 30
+      },
+      "mcnemar": {
+        "n_pairs": 30,
+        "both_pass": 18,
+        "b_a_only": 12,
+        "c_b_only": 0,
+        "both_fail": 0,
+        "rate_a": 1.0,
+        "rate_b": 0.6,
+        "delta_pp": 40.0,
+        "p_value": 0.00048828125,
+        "conclusive": true,
+        "power_note": "With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend."
+      }
+    },
+    "sigma_8mm": {
+      "calib_noise_sigma_mm": 8.0,
+      "skills_privileged": {
+        "mean": 0.8333333333333334,
+        "ci_low": 0.6666666666666666,
+        "ci_high": 0.9666666666666667,
+        "n": 30
+      },
+      "raw_coords_privileged": {
+        "mean": 0.5,
+        "ci_low": 0.3333333333333333,
+        "ci_high": 0.6666666666666666,
+        "n": 30
+      },
+      "mcnemar": {
+        "n_pairs": 30,
+        "both_pass": 13,
+        "b_a_only": 12,
+        "c_b_only": 2,
+        "both_fail": 3,
+        "rate_a": 0.8333333333333334,
+        "rate_b": 0.5,
+        "delta_pp": 33.333333333333336,
+        "p_value": 0.012939453125,
+        "conclusive": true,
+        "power_note": "With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend."
+      }
+    }
+  }
+}

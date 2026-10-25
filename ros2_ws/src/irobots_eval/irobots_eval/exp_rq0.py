@@ -16,6 +16,7 @@ from typing import Any
 from irobots_core.agent.policy import evaluate_scripted_policy_l1
 from irobots_core.config import REPO_ROOT, env_or, load_yaml
 from irobots_core.robot_model import load_robot
+from irobots_core.sim.mujoco_sim import detect_sim_backend_label
 
 from .stats import STATISTICAL_POWER_NOTE, bootstrap_ci, mcnemar_paired_test
 
@@ -34,6 +35,7 @@ def run_rq0(*, out_path: str | Path | None = None) -> dict[str, Any]:
 
     report: dict[str, Any] = {
         "rq": "RQ0",
+        "sim_backend": detect_sim_backend_label(),
         "question": (
             "How much does the LLM add over a hand-written skill script, per unit of "
             "latency and cost, and how often does it loop or mis-select an identity?"
