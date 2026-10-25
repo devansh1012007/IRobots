@@ -1,0 +1,22 @@
+# Task L1: Single-object pick and lift (PLAN:irobots-v2:C22, D10).
+task:
+  name: l1_pick_and_lift
+  level: L1
+  instruction: "Pick up the red block and lift it off the table."
+  provenance: design
+  target_object: red_block
+  goal_type: lift
+  min_lift_clearance_m: 0.015
+  turn_budget: 8
+  episode_deadline_s: 30.0
+  objects:
+    - name: red_block
+      label: red block
+      shape: box
+      size: [0.04, 0.04, 0.04]
+      mass: 0.04
+      friction: 0.6
+      rgba: "0.85 0.25 0.25 1"
+      provenance: design
+  distractors: []
+  bins: []

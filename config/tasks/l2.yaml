@@ -1,0 +1,40 @@
+# Task L2: Pick and place with distractors into a marked surface region (PLAN:irobots-v2:C22, D10, R15).
+# Per R15: the bin is a marked surface region on the table so grading uses the
+# object's final world pose (privileged) without confounding container-interior
+# occlusion.
+task:
+  name: l2_pick_and_place_bin
+  level: L2
+  instruction: "Pick up the red block and place it in the bin."
+  provenance: design
+  target_object: red_block
+  target_bin: bin
+  goal_type: place_in_bin
+  bin_radius_m: 0.040
+  turn_budget: 14
+  episode_deadline_s: 45.0
+  objects:
+    - name: red_block
+      label: red block
+      shape: box
+      size: [0.04, 0.04, 0.04]
+      mass: 0.04
+      friction: 0.6
+      rgba: "0.85 0.25 0.25 1"
+      provenance: design
+  distractors:
+    - name: blue_block
+      label: blue block
+      shape: box
+      size: [0.04, 0.04, 0.04]
+      mass: 0.04
+      friction: 0.6
+      rgba: "0.25 0.40 0.85 1"
+      provenance: design
+  bins:
+    - name: bin
+      label: bin
+      shape: region
+      size: [0.08, 0.08, 0.002]
+      rgba: "0.25 0.78 0.35 1"
+      provenance: design

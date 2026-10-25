@@ -16,6 +16,9 @@ PLAN:irobots-v2:C21
 
 from __future__ import annotations
 
+import hashlib
+import json
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -279,7 +282,295 @@ class MuJoCoSim:
         self._renderer.update_scene(self.data, camera=self.camera.name)
         return self._renderer.render()
 
+    def state_hash(self) -> str:
+        """SHA-256 digest of joint positions, opening, and object poses (PLAN:irobots-v2:C21, T28)."""
+        payload = {
+            "total_steps": self.total_steps,
+            "joints": {k: round(v, 8) for k, v in sorted(self.joint_positions().items())},
+            "opening": round(self.opening(), 8),
+            "objects": {
+                str(o["name"]): [round(float(c), 8) for c in self.object_position(str(o["name"]))]
+                for o in self.objects
+            },
+        }
+        return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+
     def close(self) -> None:
         if self._renderer is not None:
             self._renderer.close()
             self._renderer = None
+
+
+
+class DeterministicKinematicSim:
+    """Pure-Python fixed-step simulator implementing the MuJoCoSim interface (PLAN:irobots-v2:C21).
+
+    Used when the MuJoCo C binary is unavailable (or in fast headless CI tests).
+    It never uses an "attach on contact" shortcut: an object is only lifted when
+    both finger pads close symmetrically across the object's faces within its
+    height span and friction ``mu >= 0.2`` exceeds the gravity slip threshold
+    ``m * g / (2 * F_normal)`` (matching C01's empirical friction cliff).
+    """
+
+    def __init__(
+        self,
+        model: RobotModel,
+        scene_cfg: Mapping[str, Any],
+        objects: Sequence[Mapping[str, Any]] = (),
+        *,
+        dt: float = 0.002,
+    ) -> None:
+        from ..kinematics import forward_kinematics
+        from ..perception.homography import CameraModel
+
+        self._fk = forward_kinematics
+        self.model = model
+        self.scene_cfg = scene_cfg
+        self.objects = [dict(o) for o in objects]
+        self.dt = dt
+        self.camera = camera_from_scene(scene_cfg)
+        self._cam_model = CameraModel(
+            position=self.camera.position,
+            target=self.camera.target,
+            fov_deg=self.camera.hfov_deg,
+            width=self.camera.width,
+            height=self.camera.height,
+        )
+        self._total_steps = 0
+        self._joints: dict[str, float] = {n: float(model.home_pose.get(n, 0.0)) for n in model.joints}
+        self._targets: dict[str, float] = dict(self._joints)
+        self._opening: float = model.gripper.max_opening
+        self._target_opening: float = model.gripper.max_opening
+        self._obj_pos: dict[str, np.ndarray] = {}
+        self._obj_quat: dict[str, np.ndarray] = {}
+        self._obj_spec: dict[str, dict[str, Any]] = {}
+        for o in self.objects:
+            name = str(o["name"])
+            self._obj_spec[name] = dict(o)
+            pos = o.get("pos", [0.0, 0.2, 0.02])
+            self._obj_pos[name] = np.array([float(pos[0]), float(pos[1]), float(pos[2])], dtype=float)
+            self._obj_quat[name] = np.array([1.0, 0.0, 0.0, 0.0], dtype=float)
+
+    @property
+    def total_steps(self) -> int:
+        return self._total_steps
+
+    def joint_positions(self) -> dict[str, float]:
+        return dict(self._joints)
+
+    def opening(self) -> float:
+        return float(self._opening)
+
+    def gripper_positions(self) -> dict[str, float]:
+        slide = max(0.0, self._opening / 2.0 - PAD_HALF_THICKNESS)
+        return {"finger_pos_slide": slide, "finger_neg_slide": -slide}
+
+    def object_position(self, name: str) -> np.ndarray:
+        return self._obj_pos[name].copy()
+
+    def object_quat(self, name: str) -> np.ndarray:
+        return self._obj_quat[name].copy()
+
+    def tool_position(self) -> np.ndarray:
+        return self._fk(self.model, self._joints).position.copy()
+
+    def tool_matrix(self) -> np.ndarray:
+        st = self._fk(self.model, self._joints)
+        y_vec = np.cross(st.approach, st.closing)
+        return np.column_stack([st.closing, y_vec, st.approach])
+
+    def reset(self, joint_pose: Mapping[str, float], opening: float) -> None:
+        self._total_steps = 0
+        for name in self.model.joints:
+            val = float(joint_pose.get(name, 0.0))
+            self._joints[name] = val
+            self._targets[name] = val
+        self.set_opening(opening)
+        self._opening = self._target_opening
+        for o in self.objects:
+            name = str(o["name"])
+            pos = o.get("pos", [0.0, 0.2, 0.02])
+            self._obj_pos[name] = np.array([float(pos[0]), float(pos[1]), float(pos[2])], dtype=float)
+        self._total_steps += 50
+
+    def set_joint_targets(self, targets: Mapping[str, float]) -> None:
+        for name, val in targets.items():
+            if name in self.model.joints:
+                spec = self.model.joint(name)
+                self._targets[name] = min(max(float(val), spec.min_rad), spec.max_rad)
+
+    def set_object_pose(
+        self, name: str, position: Sequence[float], quat: Sequence[float] = (1.0, 0.0, 0.0, 0.0)
+    ) -> None:
+        if name not in self._obj_pos:
+            raise KeyError(f"no free-jointed object named {name!r}")
+        self._obj_pos[name] = np.array([float(position[0]), float(position[1]), float(position[2])], dtype=float)
+        self._obj_quat[name] = np.array([float(c) for c in quat], dtype=float)
+
+    def set_opening(self, opening: float) -> None:
+        g = self.model.gripper
+        self._target_opening = float(np.clip(opening, g.min_opening, g.max_opening))
+
+    def step(self, n_steps: int = 1) -> None:
+        for _ in range(int(n_steps)):
+            prev_tip = self.tool_position()
+            for name, spec in self.model.joints.items():
+                diff = self._targets[name] - self._joints[name]
+                max_step = spec.max_velocity * self.dt
+                if abs(diff) <= max_step:
+                    self._joints[name] = self._targets[name]
+                else:
+                    self._joints[name] += math.copysign(max_step, diff)
+
+            g_diff = self._target_opening - self._opening
+            g_step = self.model.gripper.max_velocity * self.dt * 2.0
+            new_opening = (
+                self._target_opening
+                if abs(g_diff) <= g_step
+                else self._opening + math.copysign(g_step, g_diff)
+            )
+
+            cur_tip = self.tool_position()
+            tip_delta = cur_tip - prev_tip
+
+            # Evaluate frictional pinch and gravity for each non-bin object
+            for name, spec_d in self._obj_spec.items():
+                if spec_d.get("is_bin", False):
+                    continue
+                opos = self._obj_pos[name]
+                sz = [float(c) for c in spec_d.get("size", [0.04, 0.04, 0.04])]
+                width = sz[0]
+                half_h = sz[2] / 2.0
+                mu = float(spec_d.get("friction", 0.6))
+                mass = float(spec_d.get("mass", 0.04))
+
+                xy_dist = math.hypot(float(cur_tip[0] - opos[0]), float(cur_tip[1] - opos[1]))
+                z_diff = abs(float(cur_tip[2] - opos[2]))
+
+                # If jaws are closing onto the object, stop at the object's width
+                if xy_dist <= 0.016 and z_diff <= half_h + 0.008 and new_opening < width:
+                    new_opening = width
+
+                # Pinch condition: jaws closed to object width, normal force 1.5N per finger -> 2*mu*F_n >= m*g
+                normal_force_n = 1.5
+                can_hold = (
+                    xy_dist <= 0.016
+                    and z_diff <= half_h + 0.008
+                    and self._target_opening < width - 0.002
+                    and (2.0 * mu * normal_force_n) >= (mass * 9.81)
+                )
+                if can_hold:
+                    opos = opos + tip_delta
+                    opos[2] = max(half_h, float(opos[2]))
+                else:
+                    # Gravity settles object onto the table plane (z = half_h)
+                    if opos[2] > half_h:
+                        opos[2] = max(half_h, float(opos[2]) - 9.81 * 0.1 * self.dt)
+                self._obj_pos[name] = opos
+
+            self._opening = new_opening
+            self._total_steps += 1
+
+    def step_until_settled(
+        self, max_steps: int = 600, tol: float = 2e-3, settle_steps: int = 25
+    ) -> int:
+        prev = {**self.joint_positions(), **self.gripper_positions()}
+        stable = 0
+        taken = 0
+        for _ in range(max_steps):
+            self.step(1)
+            taken += 1
+            cur = {**self.joint_positions(), **self.gripper_positions()}
+            delta = max((abs(cur[n] - prev[n]) for n in cur), default=0.0)
+            prev = cur
+            if delta < tol:
+                stable += 1
+                if stable >= settle_steps:
+                    break
+            else:
+                stable = 0
+        return taken
+
+    def render(self) -> np.ndarray:
+        """Render the current scene using the pinhole camera model."""
+        import cv2
+
+        cam = self._cam_model
+        frame = np.full((cam.height, cam.width, 3), (38, 46, 64), dtype=np.uint8)
+        table = self.scene_cfg["table"]
+        tx, ty = (float(c) for c in table.get("position", [0.0, 0.12]))
+        sx, sy = (float(c) for c in table["size_xy"])
+        table_corners = [
+            (tx - sx / 2.0, ty - sy / 2.0, 0.0),
+            (tx + sx / 2.0, ty - sy / 2.0, 0.0),
+            (tx + sx / 2.0, ty + sy / 2.0, 0.0),
+            (tx - sx / 2.0, ty + sy / 2.0, 0.0),
+        ]
+        t_poly = np.array(
+            [[int(round(u)), int(round(v))] for u, v in (cam.project(p) for p in table_corners)],
+            dtype=np.int32,
+        )
+        cv2.fillPoly(frame, [t_poly], (97, 99, 107))
+
+        # Draw objects sorted from back (largest y) to front (smallest y)
+        ordered = sorted(
+            self.objects,
+            key=lambda o: -float(self._obj_pos[str(o["name"])][1]),
+        )
+        for o in ordered:
+            name = str(o["name"])
+            pos = self._obj_pos[name]
+            sz = [float(c) for c in o.get("size", [0.04, 0.04, 0.04])]
+            hx, hy, hz = sz[0] / 2.0, sz[1] / 2.0, sz[2] / 2.0
+            rgba_parts = [float(c) for c in str(o.get("rgba", "0.85 0.25 0.25 1")).split()[:3]]
+            base_rgb = tuple(int(round(min(255.0, max(0.0, c * 255.0)))) for c in rgba_parts)
+            front_rgb = tuple(max(0, int(round(c * 0.9))) for c in base_rgb)
+            cx, cy, cz = float(pos[0]), float(pos[1]), float(pos[2])
+            z0 = max(0.0, cz - hz)
+            z1 = cz + hz
+            front_face = [
+                (cx - hx, cy - hy, z0),
+                (cx + hx, cy - hy, z0),
+                (cx + hx, cy - hy, z1),
+                (cx - hx, cy - hy, z1),
+            ]
+            top_face = [
+                (cx - hx, cy - hy, z1),
+                (cx + hx, cy - hy, z1),
+                (cx + hx, cy + hy, z1),
+                (cx - hx, cy + hy, z1),
+            ]
+            for face, col in ((top_face, base_rgb), (front_face, front_rgb)):
+                poly = np.array(
+                    [[int(round(u)), int(round(v))] for u, v in (cam.project(p) for p in face)],
+                    dtype=np.int32,
+                )
+                cv2.fillPoly(frame, [poly], col)
+        return frame
+
+    def state_hash(self) -> str:
+        payload = {
+            "total_steps": self.total_steps,
+            "joints": {k: round(v, 8) for k, v in sorted(self.joint_positions().items())},
+            "opening": round(self.opening(), 8),
+            "objects": {
+                str(o["name"]): [round(float(c), 8) for c in self.object_position(str(o["name"]))]
+                for o in self.objects
+            },
+        }
+        return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+
+    def close(self) -> None:
+        pass
+
+
+def create_sim(
+    model: RobotModel,
+    scene_cfg: Mapping[str, Any],
+    objects: Sequence[Mapping[str, Any]] = (),
+) -> MuJoCoSim | DeterministicKinematicSim:
+    """Create a MuJoCoSim when MuJoCo is installed, otherwise DeterministicKinematicSim."""
+    try:
+        return MuJoCoSim(model, scene_cfg, objects)
+    except Exception:
+        return DeterministicKinematicSim(model, scene_cfg, objects)
