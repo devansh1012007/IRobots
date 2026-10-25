@@ -1,0 +1,28 @@
+# Headless logic + physics CI workflow (PLAN:irobots-v2:C63, D22, T64).
+# Rendering tests run locally/nightly rather than on a software rasteriser in CI.
+name: ci
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: tools/install_deps.sh
+      - name: Check firmware header generation (T56)
+        run: |
+          .venv/bin/python tools/gen_firmware_config.py
+          git diff --exit-code firmware/esp32_arm/generated/robot_config.h
+      - name: Lint with ruff
+        run: .venv/bin/ruff check ros2_ws/src/irobots_core ros2_ws/src/irobots_nodes ros2_ws/src/irobots_msgs ros2_ws/src/irobots_eval
+      - name: Typecheck with mypy --strict
+        run: .venv/bin/mypy --strict ros2_ws/src/irobots_core/irobots_core
+      - name: Run unit and headless physics tests
+        run: .venv/bin/pytest ros2_ws/src/irobots_core/tests -q

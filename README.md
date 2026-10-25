@@ -1,101 +1,43 @@
-# IRobots v2
+# IRobots v2 — Reproducible LLM-Manipulation Research Artifact
 
-A robotic arm you talk to instead of program - rebuilt as a **reproducible
-research artifact**.
+IRobots v2 (`PLAN:irobots-v2:C64`) is a hardware-free, reproducible LLM-manipulation research artifact. A 5-DOF robotic arm is given a manipulation task in natural language; an LLM planner and worker select atomic skills from a fixed library (`move_above`, `grasp`, `lift`, `release`, `retreat`, `home`); deterministic code resolves object coordinates from perception, checks every pose through a pure safety supervisor, executes trapezoidal joint trajectories, and verifies the physical outcome on the next camera frame.
 
-The deliverable is evidence, not a demo. Four research questions are answered
-with numbers, and every headline result must reproduce on a machine with
-**no arm, no camera, and no GPU**.
+Every headline result is reproducible on a CPU-only machine with **no physical arm, no camera, and no GPU**. Full quantitative results and statistical tables live in [`docs/RESULTS.md`](docs/RESULTS.md), and the architectural design contract lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-> **Status: Phase 0 complete.** The physics and kinematics gates pass. The
-> perception, agent and evaluation phases have not run, so the research
-> questions are not yet answered. See [`docs/RESULTS.md`](docs/RESULTS.md) for
-> what exists and what does not.
-
-## What it is
-
-An LLM is told a task in plain language. It picks the next atomic action from
-a fixed skill library. Deterministic code turns that into motion. The camera
-observes the outcome, and the loop continues.
-
-```
-operator ─▶ planner (LLM) ─▶ worker (LLM) ─▶ one skill call
-                                                 │
-                        perception ──▶ safety supervisor ──▶ arm
-                            ▲                                  │
-                            └──── verification ◀── new frame ◀─┘
-```
-
-The one rule that shapes everything: **the LLM never emits a coordinate.** It
-selects a skill and names an object; the host derives every position from a
-measurement. That is what makes a miss attributable to calibration or
-kinematics instead of to a model that guessed.
-
-## Where it actually stands
-
-| Piece | Status | What that means concretely |
-|---|---|---|
-| Arm model + analytic kinematics | **Working** | 5 DOF + parallel jaw, generated from `config/robot.yaml`. Analytic and simulated kinematics agree to 0.0000 um over 300 random poses. |
-| Grasp physics | **Working** | 100% grasp rate on a 4 cm cube at mu >= 0.2 (250 trials), mean slip < 2 mm, with a measured friction cliff below that. |
-| Perception | Not yet | YOLO-World is installed and the homography design is fixed; the gate that measures it has not run. |
-| Agent loop | Not yet | The skills, the safety supervisor and the planner/worker split are designed; they are not written. |
-| ROS 2 skin | Not yet | The interface is fixed. ROS 2 is deliberately *not* in the algorithms. |
-| ESP32 arm firmware | Not yet | The protocol is designed; the rewrite is a later phase and nothing depends on it. |
-| ESP32-CAM firmware | **Working** | The camera node runs today. It is the only physical hardware the project uses. |
-| Mechanical design | **Working** | The SolidWorks assembly and the printable STLs are in `robotic arm schematics/`. |
-
-## Running it
+## Quick Start (`reproduce.sh`)
 
 ```bash
-tools/install_deps.sh        # retries, resumable downloads, verifies the result
-python spike/grasp_bench.py  # the physics gate: 250 trials in ~17 seconds
-python spike/mem_bench.py    # the memory budget
+tools/install_deps.sh      # CPU-only PyTorch + MuJoCo + YOLO-World + test tools
+./reproduce.sh             # Run unit tests, Phase 0 gates, RQ0-RQ3 evals, and regenerate docs/RESULTS.md
 ```
 
-`spike/REPORT.md` is the gate report, with the numbers and the eight bugs
-these gates caught.
+## The Six Invariants
 
-## Layout
+| ID | Invariant | Enforced in |
+|---|---|---|
+| **I1** | The LLM never emits a Cartesian coordinate; skills take tracked object IDs and the host derives poses. | `irobots_core/skills.py`, `irobots_core/llm/schema.py` |
+| **I2** | Every commanded pose passes the safety supervisor before execution; rejection is a first-class outcome. | `irobots_core/safety.py`, `irobots_nodes/safety_node.py` |
+| **I3** | Strictly one skill per observation. | `irobots_core/agent/worker.py`, `irobots_core/loop.py` |
+| **I4** | Every episode terminates via per-skill deadlines, per-episode deadlines, and per-trial subprocess hard kill. | `irobots_nodes/control_node.py`, `irobots_eval/runner.py` |
+| **I5** | No metric mixes privileged (simulator ground truth) and perceived quantities. | `irobots_eval/metrics.py`, `docs/RESULTS.md` |
+| **I6** | Fixed `dt` simulation; the simulator is paused while the LLM and perception pipeline run. | `irobots_core/sim/mujoco_sim.py`, `irobots_nodes/sim_node.py` |
 
-```
-PLAN.md                  the plan: design, phases, decisions, risks
-AGENTS.md                working rules for humans and agents
-config/                  robot.yaml, scene.yaml, perception.yaml  (single sources of truth)
-ros2_ws/src/irobots_core/    pure Python: kinematics, safety, skills, perception, agent
-ros2_ws/src/irobots_nodes/   thin rclpy wrappers
-spike/                   the Phase 0 feasibility gates
-tools/                   install_deps.sh, fetch_weights.sh  (resilient installers)
-firmware/esp32_cam/      the working camera firmware
-legacy/                  the original hackathon code, frozen
-docs/                    ARCHITECTURE.md, RESULTS.md, hardware/
-robotic arm schematics/  the SolidWorks assembly and the STLs
-```
+## Honest Status Table
 
-## Why the robot is "specified" rather than measured
+| Component | Status | Verification |
+|---|---|---|
+| Pure-Python core (`irobots_core`) | **Complete** | 80 unit & integration tests passing; zero ROS imports (`T12`) |
+| Phase 0 physics & perception gates (`spike/`) | **Complete** | C01: 100% grasp @ $\mu=0.5$; C01c: 0.0000 µm FK/sim agreement; C02: 100% det, 7.0 mm p95 XY; C04: 1815 MB peak RSS |
+| ROS 2 thin wrapper nodes & messages (`irobots_nodes`, `irobots_msgs`, `irobots_bringup`) | **Complete** | Unit-tested in pure Python; live ROS 2 Jazzy graph integration not run when `ros2` is absent |
+| Evaluation harness & RQ0–RQ3 (`irobots_eval`) | **Complete** | SC1: 100% scripted L1; SC2: 100% det / 7.83 mm p95 XY on 200 frames; SC4: 150/150 unattended episodes, 0 hangs |
+| ESP32 arm firmware & emulator (`firmware/esp32_arm`, `irobots_core/arm`) | **Complete** | Both C++ firmware core and Python emulator pass the 6-scenario NDJSON protocol conformance suite (`T55–T59`) |
+| Real ESP32-CAM frame evaluation (`tools/capture_real_frames.py`) | **Pending operator capture** | Tooling ready (`T27`); requires physical ESP32-CAM capture into `data/real/` per [`docs/hardware/CAMERA_CAPTURE.md`](docs/hardware/CAMERA_CAPTURE.md) |
+| Physical 5-DOF arm hardware | **Not assembled** | Every grasp claim is scoped to the robot specified in `config/robot.yaml`; see the binding unverified list in [`docs/RESULTS.md`](docs/RESULTS.md) |
 
-The arm is **not physically assembled**. The SolidWorks assembly is an opaque
-binary with no recoverable joint frames, so the joint axes, offsets and limits
-are *our choices*, recorded in `config/robot.yaml` with a `provenance` tag on
-every constant: `measured` (read off the STLs), `design` (chosen, with the
-reason), or `assumed` (a guess that needs a real arm).
+## Legacy Code (`legacy/`)
 
-Every grasp claim in this repository is a claim about that specified robot.
-[`docs/RESULTS.md`](docs/RESULTS.md) carries the explicit
-"not verified without the physical arm" list, and it is binding.
+The original hackathon scripts and Arduino sketches are frozen in [`legacy/`](legacy/) as a historical record of the three defects this rebuild fixes (anonymous SAM masks without class labels, `cm = px / 30.0` at the image corner, and invented Z). Nothing in the active packages imports from `legacy/`.
 
-## Honest notes
+## Licensing Disclosure (D24)
 
-* The simulator is an instrument, not the subject. The research questions are
-  about the LLM, perception and control architecture.
-* Simulation renders are optimistic: no exposure drift, no JPEG artifacts, no
-  motion blur. A real-frame set is planned precisely to measure that gap.
-* Ultralytics (YOLO-World) is **AGPL-3.0**. Disclosed, not avoided.
-* The planner is called when the task changes or a step fails; the worker
-  runs every turn. The LLM's contribution is measured, not assumed - a null
-  result is a publishable outcome.
-
-## License
-
-MIT, except the camera firmware under `firmware/esp32_cam/`, which derives
-from Espressif's CameraWebServer example and stays under Apache 2.0.
-Attribution is in [`NOTICE`](NOTICE).
+This project's code is released under the repository license (`LICENSE`), **except** for the optional open-vocabulary detector dependency Ultralytics (`ultralytics` / YOLO-World), which is licensed under **AGPL-3.0**. Any distribution or hosted deployment that bundles Ultralytics is subject to AGPL-3.0 terms.
