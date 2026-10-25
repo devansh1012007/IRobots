@@ -36,14 +36,15 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "ros2_ws" / "src" / "irobots_core"))
 
-import numpy as np
-from irobots_core.config import load_yaml
-from irobots_core.kinematics import IKStatus, inverse_kinematics
-from irobots_core.robot_model import load_robot
-from irobots_core.sim.mujoco_sim import MuJoCoSim
+from irobots_core.config import load_yaml  # noqa: E402
+from irobots_core.kinematics import IKStatus, inverse_kinematics  # noqa: E402
+from irobots_core.robot_model import RobotModel, load_robot  # noqa: E402
+from irobots_core.sim.mujoco_sim import MuJoCoSim  # noqa: E402
 
 CUBE_NAME = "cube"
 CUBE_SIZE = 0.04
@@ -78,7 +79,7 @@ def _yaw_quat(yaw: float) -> list[float]:
     return [math.cos(yaw / 2.0), 0.0, 0.0, math.sin(yaw / 2.0)]
 
 
-def _sample_pose(rng: np.random.Generator, centre: tuple[float, float], radius: float):
+def _sample_pose(rng: np.random.Generator, centre: tuple[float, float], radius: float) -> tuple[float, float, float]:
     r = radius * math.sqrt(float(rng.random()))
     theta = float(rng.random()) * 2.0 * math.pi
     x = centre[0] + r * math.cos(theta)

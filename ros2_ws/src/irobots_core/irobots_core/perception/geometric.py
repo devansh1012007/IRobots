@@ -28,8 +28,8 @@ from __future__ import annotations
 
 import colorsys
 import math
-from dataclasses import dataclass
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any, Final
 
 import numpy as np
@@ -214,7 +214,7 @@ class GeometricDetector:
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
 
-        n_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, 8)
+        n_labels, labels, stats, _centroids = cv2.connectedComponentsWithStats(mask, 8)
         total_px = float(self.camera.width * self.camera.height)
         out: list[Detection] = []
         for i in range(1, n_labels):
@@ -225,10 +225,6 @@ class GeometricDetector:
             mean_rgb = frame[component].reshape(-1, 3).mean(axis=0)
             # The contact point is the BOTTOM of the component, in the middle
             # of its bottom row: the object's contact with the table.
-            rows = np.where(component.any(axis=1))[0]
-            bottom_row = int(rows[-1])
-            bottom_cols = np.where(component[bottom_row])[0]
-            cx_px = float(bottom_cols.mean())
             out.append(
                 Detection(
                     label=colour_name(mean_rgb),

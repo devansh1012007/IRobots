@@ -38,3 +38,21 @@ ignore = ["E501"]
 python_version = "3.11"
 strict = true
 warn_unused_ignores = false
+mypy_path = [
+    "ros2_ws/src/irobots_core",
+    "ros2_ws/src/irobots_nodes",
+    "ros2_ws/src/irobots_msgs",
+    "ros2_ws/src/irobots_eval",
+    "ros2_ws/src/irobots_bringup",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "mujoco",
+    "mujoco.*",
+    "ultralytics",
+    "ultralytics.*",
+    "cv2",
+    "cv2.*",
+]
+ignore_missing_imports = true

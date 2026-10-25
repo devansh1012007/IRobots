@@ -73,4 +73,4 @@ class TUINode:
 
         plan_str = "\n".join(f"  - {s}" for s in self.plan_steps)
         console.print(Panel(plan_str, title=f"PLAN (approved={self.plan_approved})"))
-        return console.export_text()
+        return str(console.export_text())

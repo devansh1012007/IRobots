@@ -280,7 +280,7 @@ class MuJoCoSim:
                 self.mj, height=self.camera.height, width=self.camera.width
             )
         self._renderer.update_scene(self.data, camera=self.camera.name)
-        return self._renderer.render()
+        return np.asarray(self._renderer.render(), dtype=np.uint8)
 
     def state_hash(self) -> str:
         """SHA-256 digest of joint positions, opening, and object poses (PLAN:irobots-v2:C21, T28)."""

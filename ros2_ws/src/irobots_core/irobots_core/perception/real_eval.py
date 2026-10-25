@@ -94,8 +94,8 @@ def evaluate_real_dataset(
 
     cam_cfg = scene_cfg["camera"]
     camera = CameraModel(
-        position=tuple(float(c) for c in cam_cfg["position"]),  # type: ignore[arg-type]
-        target=tuple(float(c) for c in cam_cfg["target"]),  # type: ignore[arg-type]
+        position=(float(cam_cfg["position"][0]), float(cam_cfg["position"][1]), float(cam_cfg["position"][2])),
+        target=(float(cam_cfg["target"][0]), float(cam_cfg["target"][1]), float(cam_cfg["target"][2])),
         fov_deg=float(cam_cfg["hfov_deg"]),
         width=int(cam_cfg["width"]),
         height=int(cam_cfg["height"]),

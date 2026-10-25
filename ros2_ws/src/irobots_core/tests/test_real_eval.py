@@ -11,10 +11,8 @@ Asserts:
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import cv2
 import numpy as np
 
 from irobots_core.perception.homography import CameraModel
@@ -27,8 +25,8 @@ from irobots_core.perception.real_eval import (
 def _make_camera(scene: dict) -> CameraModel:
     cam_cfg = scene["camera"]
     return CameraModel(
-        position=tuple(float(c) for c in cam_cfg["position"]),  # type: ignore[arg-type]
-        target=tuple(float(c) for c in cam_cfg["target"]),  # type: ignore[arg-type]
+        position=(float(cam_cfg["position"][0]), float(cam_cfg["position"][1]), float(cam_cfg["position"][2])),
+        target=(float(cam_cfg["target"][0]), float(cam_cfg["target"][1]), float(cam_cfg["target"][2])),
         fov_deg=float(cam_cfg["hfov_deg"]),
         width=int(cam_cfg["width"]),
         height=int(cam_cfg["height"]),
