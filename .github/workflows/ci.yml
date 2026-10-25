@@ -1,10 +1,10 @@
-# Headless logic + physics CI workflow (PLAN:irobots-v2:C63, D22, T64).
+# Headless logic + physics + web console CI workflow (PLAN:irobots-v2:C63, C67-F7, D22, T64).
 # Rendering tests run locally/nightly rather than on a software rasteriser in CI.
 name: ci
 
 on:
   push:
-    branches: [main, "feature/**"]
+    branches: [main, "feature/**", "review/**"]
   pull_request:
     branches: [main]
 
@@ -21,8 +21,10 @@ jobs:
           .venv/bin/python tools/gen_firmware_config.py
           git diff --exit-code firmware/esp32_arm/generated/robot_config.h
       - name: Lint with ruff
-        run: .venv/bin/ruff check ros2_ws/src/irobots_core ros2_ws/src/irobots_nodes ros2_ws/src/irobots_msgs ros2_ws/src/irobots_eval
+        run: .venv/bin/ruff check ros2_ws tools spike
       - name: Typecheck with mypy --strict
-        run: .venv/bin/mypy --strict ros2_ws/src/irobots_core/irobots_core
+        run: .venv/bin/mypy --strict ros2_ws/src/irobots_core/irobots_core ros2_ws/src/irobots_nodes/irobots_nodes
+      - name: Run headless web console smoke test (no browser, no network)
+        run: .venv/bin/pytest ros2_ws/src/irobots_core/tests/test_web_console.py -q
       - name: Run unit and headless physics tests
         run: .venv/bin/pytest ros2_ws/src/irobots_core/tests -q

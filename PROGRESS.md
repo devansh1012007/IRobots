@@ -1,7 +1,7 @@
 # IRobots v2 — Implementation Progress (`PROGRESS.md`)
 
 - **Branch:** `review/patch` (reconstructed on top of base commit `d14f9a1` + 21 patch commits + `C67-F1..F7`)
-- **Virtualenv:** `/tmp/irobots_venv` (override via `IROBOTS_VENV`, defaults to `./.venv` in `reproduce.sh`)
+- **Virtualenv:** `${IROBOTS_VENV:-./.venv}` (tested with `IROBOTS_VENV=/tmp/irobots_venv` in sandbox)
 
 ## 1. Verified Baseline (Before `C67-F1..F7`)
 
@@ -47,7 +47,13 @@ Executed against the 21-commit `review/patch` tree on top of `d14f9a1` prior to 
   Found 9 error(s) in 43 source files
   ```
 
-## 2. Gate Outcomes & `runs/` Paths
+## 2. Post-`C67-F1..F7` Verification Summary
+
+- **`pytest ros2_ws/src/irobots_core/tests -q`**: **92 passed, 0 failed, 1 skipped** (`test_the_analytic_model_matches_the_simulator` skipped because the C `mujoco` wheel is absent in this container)
+- **`ruff check ros2_ws tools spike`**: **All checks passed!** (`0` errors)
+- **`mypy --strict ros2_ws/src/irobots_core/irobots_core ros2_ws/src/irobots_nodes/irobots_nodes`**: **Success: no issues found in 43 source files** (`0` errors, `0` `# type: ignore` comments in `irobots_core` and `irobots_nodes`)
+
+## 3. Gate Outcomes & `runs/` Paths
 
 | Gate ID | Description | Threshold | Observed Result | Engine / Provenance | `runs/` Path | Status |
 |---|---|---|---|---|---|---|
@@ -60,54 +66,53 @@ Executed against the 21-commit `review/patch` tree on top of `d14f9a1` prior to 
 | **SC2** | Detection & XY error on 200-frame frozen set (`irobots_eval/exp_rq2.py`) | Detection >= 95%, p95 XY <= 8 mm | **100.0%** detection (200/200), XY error mean **4.16 mm**, p95 **7.83 mm**; Tier P probe `|H_hat - H|` mean **1.00 mm** / p95 **2.00 mm** | `fallback sim` (`DeterministicKinematicSim`) | `runs/phase6/rq2.json` | **PASS (fallback sim)** |
 | **SC4** | Unattended multi-episode reliability (`irobots_eval/exp_rq3.py`) | 150+ episodes, zero hangs | **150/150** episodes completed unattended, **0 hangs** | `fallback sim` (`DeterministicKinematicSim`) | `runs/phase6/rq3.json` | **PASS (fallback sim)** |
 
-## 3. Per-Change-ID Status Table (C01–C66 & C67-F1..F7)
+## 4. Per-Fix Report (`C67-F1` through `C67-F7`)
 
-| Change ID | Module / File | Status | Tests Verified | Notes / Deviations |
+| Fix ID | Commit Tag | Status | Files Changed | Summary & Verification |
 |---|---|---|---|---|
-| **C01** | `spike/grasp_bench.py` | done | SC3 | Pre-existing in `runs/spike/grasp/grasp_bench.json` |
-| **C02 / C67-F1** | `homography.py`, `mujoco_model.py`, `spike/perception_bench.py` | done | T15-T17, C67-F1 | Fixed `x_axis = np.cross(forward, up)` and `-(v - cy)/f` in both `CameraModel` and `look_at_frame`; added `test_world_plus_x_projects_to_larger_u_and_farther_y_to_smaller_v`; 50/50 detected, p95 XY 7.0 mm (`fallback sim`) |
-| **C03** | `spike/llm_probe.py` | not run (blocked) | — | Blocked on `OPENROUTER_API_KEY` |
-| **C04** | `spike/mem_bench.py` | done | C04 | Pre-existing in `runs/spike/mem/mem_bench.json` (1815 MB < 2500 MB) |
-| **C05** | `spike/REPORT.md` | done | — | Updated with C02 numbers and root-cause explanation |
-| **C06** | `irobots_core/robot_model.py` | done | T01, T02 | `test_robot_model.py` (7 passed) |
-| **C07** | `irobots_core/kinematics.py` | done | T03-T05 | `test_kinematics.py` (8 passed, 1 skipped without `mujoco`) |
-| **C08** | `irobots_core/trajectory.py` | done | T06 | `test_trajectory.py` (3 passed) |
-| **C09** | `irobots_core/safety.py` | done | T07-T09 | `test_safety.py` (6 passed) |
-| **C10** | `irobots_core/skills.py` | done | T10, I1 | `test_skills.py` (4 passed) |
-| **C11** | `irobots_core/config.py` | done | T11, T12 | `test_config.py` (7 passed) |
-| **C12** | `irobots_core/perception/detector.py`, `geometric.py` | done | T13, T14 | `test_detector.py` (3 passed; `WorldDetector` YOLO-World path `not run` without `ultralytics`) |
-| **C13** | `irobots_core/perception/homography.py` | done | T15-T17 | `test_homography.py` (6 passed including C67-F1 regression test) |
-| **C14** | `irobots_core/perception/tracker.py` | done | T18, T19 | `test_tracker.py` (3 passed) |
-| **C15** | `irobots_core/perception/height.py` | done | T20-T22 | `test_height.py` (3 passed) |
-| **C16** | `irobots_core/perception/grasp.py` | done | T23, T24 | `test_grasp.py` (2 passed) |
-| **C17–C18** | `irobots_core/perception/outcomes.py`, `config/scene.yaml` | done | T25, T26 | `test_outcomes.py` (2 passed) |
-| **C19–C20** | `tools/capture_real_frames.py`, `real_eval.py` | done (real capture not run) | T27 | Unit tests pass (`test_real_eval.py`); physical frame capture `not run` (`pending_operator_capture` in `runs/real/eval.json`) |
-| **C21–C22** | `mujoco_sim.py`, `scene_builder.py`, `config/tasks/*.yaml` | done | T28, T29 | `test_sim_and_scenes.py` (2 passed using `DeterministicKinematicSim` fallback) |
-| **C23–C28** | `irobots_nodes/*`, `irobots_msgs/*`, `irobots_bringup/*` | done (ROS 2 graph not run) | T30-T36 | Pure-Python node/message/launch tests pass (`test_ros_skin.py`, 6 passed); live `rclpy` / DDS graph tests `not run` (ROS 2 Jazzy not installed) |
-| **C29–C34** | `irobots_core/llm/*`, `irobots_core/agent/*` | done (live LLM not run) | T37-T45, SC1 | `test_agent_layer.py` (8 passed); live OpenRouter/LM Studio calls `not run` |
-| **C36–C39** | `loop.py`, `tui_node.py`, `replay.py`, `estop.py` | done | T46-T52 | `test_closed_loop.py` (4 passed) |
-| **C40–C47** | `irobots_eval/*`, `docs/RESULTS.md` | done | T53, T54, SC2, SC4, SC6 | `test_eval_and_stats.py` (5 passed); `runs/phase6/*.json` generated via `fallback sim` |
-| **C48–C52** | `firmware/esp32_arm/*`, `emulator.py`, `protocol.py`, `arm_bridge_node.py` | done | T55-T59 | `test_firmware_and_protocol.py` (3 passed, including C++ `g++` conformance compilation); physical MCU flash `not run` |
-| **C60** | `Dockerfile` / `docker-compose.yml` | not run (skipped) | — | Skipped per rule: Docker is not available in this container to test a Dockerfile |
-| **C61–C64** | `reproduce.sh`, `weight_hashes.py`, `ci.yml`, `README.md` | done | T63-T65 | `test_packaging.py` (4 passed) |
-| **C65** | `irobots_core/perception/camera_source.py`, `config/perception.yaml` | done | T66-T70 | `SimCameraSource` vs `ESP32CameraSource` switching (`test_camera_source.py`) |
-| **C66** | `web/irobots_control_console.html`, `irobots_nodes/web_node.py` | done | `test_web_console.py` | Technical deep-black/grey operator Web Control Console and backend |
+| **F1** | `PLAN:irobots-v2:C67-F1` | done | `homography.py`, `mujoco_model.py`, `test_homography.py`, `runs/spike/perception/perception_bench.json` | Committed right-side-up camera basis (`x_axis = np.cross(forward, up)`, `y_axis = np.cross(z_axis, x_axis)`) and downward row `v` (`-(v - cy)/f`); added `test_world_plus_x_projects_to_larger_u_and_farther_y_to_smaller_v`; reran `spike/perception_bench.py --trials 50` (`100%` detection, `7.0 mm` p95 XY). |
+| **F2** | `PLAN:irobots-v2:C67-F2` | done | `PROGRESS.md` | Recorded verified baseline counts, added `C65` & `C66`, marked unmeasured items `not run`, and documented `F3`–`F7` known limitations. |
+| **F3** | `PLAN:irobots-v2:C67-F3` | done | `config/perception.yaml`, `camera_source.py`, `outcomes.py`, `loop.py`, `estop.py`, `policy.py`, `sim_node.py`, `web_node.py`, `test_camera_source.py`, `test_web_console.py` | Required validated `MarkerCalibration` (`perception.camera_source.calibration_file`, 4+ points, RMS <= threshold) for `esp32_cam`; added `allow_real_camera_with_sim_arm` hybrid guard & `"hybrid: real camera + simulated arm"` labelling with `task_success_privileged=None`; turned capture failures/timeouts into typed `CameraCaptureError` -> `camera_unavailable` outcome within I4 deadlines; logged `camera_source` and credential-stripped `capture_host` in `episode.jsonl`. |
+| **F4** | `PLAN:irobots-v2:C67-F4` | done | `config/perception.yaml`, `web_node.py`, `web/irobots_control_console.html`, `test_web_console.py`, `test_config.py` | Implemented stdlib `WebConsoleServer` (`GET /api/state`, `GET /api/frame.jpg`, `GET /api/config`, `POST /api/camera_source`, `POST /api/task`, `POST /api/approve`, `POST /api/step`, `POST /api/run`, `POST /api/estop`, `POST /api/reset`) + `python -m irobots_nodes.web_node --port N`; removed all external URLs, CSS gradients, simulated ESP32 jitter, and JS copies of `forwardKinematics`, `inverseKinematics`, and `checkSafety`; escaped DOM updates with `textContent`. |
+| **F5** | `PLAN:irobots-v2:C67-F5` | done | `pyproject.toml`, `ros2_ws/src/irobots_core/pyproject.toml`, `detector.py`, `geometric.py`, `real_eval.py`, `mujoco_sim.py`, `tui_node.py`, `grasp_bench.py`, `perception_bench.py`, `generate_results_md.py`, `tests/*` | Added targeted mypy overrides for `mujoco`, `ultralytics`, and `cv2`; eliminated all `# type: ignore` comments from `irobots_core` and `irobots_nodes`; resolved all `ruff check ros2_ws tools spike` (`0` errors) and `mypy --strict` (`0` errors) issues. |
+| **F6** | `PLAN:irobots-v2:C67-F6` | done | `mujoco_sim.py`, `policy.py`, `exp_rq0.py`, `exp_rq1.py`, `exp_rq2.py`, `exp_rq3.py`, `perception_bench.py`, `generate_results_md.py`, `runs/**`, `docs/RESULTS.md`, `test_eval_and_stats.py` | Tagged all `DeterministicKinematicSim` / pinhole rasteriser outputs with `sim_backend="fallback sim"` in `runs/*.json` and regenerated `docs/RESULTS.md`; kept `runs/real/eval.json` as `"pending_operator_capture"`. |
+| **F7** | `PLAN:irobots-v2:C67-F7` | done | `reproduce.sh`, `.github/workflows/ci.yml`, `test_packaging.py`, `PROGRESS.md` | Removed hardcoded `/tmp/irobots_venv` from `reproduce.sh` in favour of `${IROBOTS_VENV:-$SCRIPT_DIR/.venv}`; added headless web console smoke test (`test_web_console.py`) to `.github/workflows/ci.yml`. |
 
-## 4. Known Limitations (`F3`–`F7` Backlog & Hardware Boundaries)
+## 5. Known Limitations & What Is Not Run in This Container
 
-- **F3 (Camera source semantics & hybrid safety):** `esp32_cam` currently reuses `AnalyticCalibration` instead of requiring a validated `MarkerCalibration` (`perception.camera_source.calibration_file` with RMS <= `max_reprojection_rms_m`), lacks the `allow_real_camera_with_sim_arm` hybrid guard/labelling (`"hybrid: real camera + simulated arm"`), raises a raw exception on camera timeout instead of returning a typed `camera_unavailable` outcome within episode deadlines (I4), and does not record `camera_source` + capture host in every `episode.jsonl` turn record. *(Scheduled next in `C67-F3`.)*
-- **F4 (Web console single source of truth):** `web/irobots_control_console.html` currently duplicates FK, IK, safety, camera projection, scene sampling, and hashing in client-side JS, includes simulated ESP32 pixel jitter, loads external Tailwind/Google Fonts CDNs, uses `innerHTML` for dynamic strings, and is not yet driven by a live `WebConsoleServer` HTTP API (`GET /api/state`, `GET /api/frame.jpg`, `GET /api/config`, `POST /api/camera_source`, `POST /api/task`, `POST /api/approve`, `POST /api/step`, `POST /api/run`, `POST /api/estop`, `POST /api/reset`). *(Scheduled in `C67-F4`.)*
-- **F5 (Lint and type debt):** `ruff check ros2_ws tools spike` and `mypy --strict` have remaining import-sorting, unused-variable, `no-any-return`, `# type: ignore`, and missing third-party mypy override items across `ros2_ws`, `tools`, and `spike`. *(Scheduled in `C67-F5`.)*
-- **F6 (Fallback simulator labelling in `runs/` and `docs/RESULTS.md`):** Runs produced by `DeterministicKinematicSim` / pinhole rasteriser when `mujoco` is absent must be explicitly labelled `"fallback sim"` in both `runs/*.json` and `docs/RESULTS.md`, while real-frame evaluation remains `"pending_operator_capture"`. *(Scheduled in `C67-F6`.)*
-- **F7 (Packaging & `reproduce.sh` portability):** `reproduce.sh` currently hardcodes `/tmp/irobots_venv` instead of honouring `${IROBOTS_VENV:-./.venv}`, and headless CI needs the web console smoke test. *(Scheduled in `C67-F7`.)*
+- **MuJoCo C physics & renderer (`mujoco`) and YOLO-World (`ultralytics`):** Not installed in this offline container. All simulation and perception numbers regenerated here (`C02`, `SC1`, `SC2`, `SC4`, `RQ0`–`RQ3`) come from `DeterministicKinematicSim` and the pinhole rasteriser and are labelled `"fallback sim"` in `runs/` and `docs/RESULTS.md`. `test_the_analytic_model_matches_the_simulator` is skipped (`1 skipped`), and `WorldDetector` is `not run`.
+- **Hosted OpenRouter LLM (`C03` and live-LLM `RQ0`):** `not run` because `OPENROUTER_API_KEY` is not set and outbound network access is disabled in the sandbox.
+- **Real ESP32-CAM frame dataset (`C19`/`C20`, `data/real/`):** `not run` (`pending_operator_capture` in `runs/real/eval.json`) until physical ChArUco + object frames are captured.
+- **ROS 2 Jazzy DDS graph launch tests (`C23`–`C28`):** `rclpy` / ROS 2 Jazzy is not installed; pure-Python node, message, and launch unit tests run in `test_ros_skin.py`, while live ROS 2 DDS graph integration is `not run`.
+- **Docker image (`C60`):** `not run` / omitted per rule because Docker is not available in this container to test a `Dockerfile`.
+- **Physical 5-DOF arm hardware:** Not assembled; all items on the "Not verified without the physical arm" list in `docs/RESULTS.md` remain unverified on hardware.
 
-## 5. Needs Operator
+## 6. Needs Operator (Next Steps)
 
-1. **Uncommitted F1 fix found on disk in pre-`git init` snapshot (Section 5 disclosure):**
-   - When the repository was first initialized in the sandbox (`/tmp/irobots_repo_pre_c67_backup`), `homography.py` and `mujoco_model.py` had already been edited before the initial base commit (`473a524`) was created. Consequently, `git diff 473a524..HEAD` did not include those two files in `irobots-v2-all-changes.patch` / `irobots-v2-commits.patch`. We diffed `/tmp/orig_d14f9a1` (`d14f9a1`) against that pre-init copy and against our `C67-F1` commit (`cac9f6d`): the mathematical fix (`x_axis = np.cross(forward, up)`, `-(v - cy) / f`, `cy - f * cam[1] / -cam[2]`) is identical and is now properly committed on top of `d14f9a1` in `PLAN:irobots-v2:C67-F1`.
-2. **`mujoco`, `ultralytics`, and ROS 2 Jazzy unavailable in this container:**
-   - All simulation and perception benchmarks executed here (`C02`, `SC1`, `SC2`, `SC4`, `RQ0`–`RQ3`) used the `DeterministicKinematicSim` and pinhole rasteriser (`fallback sim`), `test_the_analytic_model_matches_the_simulator` is skipped, YOLO-World (`WorldDetector`) is `not run`, and live ROS 2 DDS graph launch tests are `not run`. Install `mujoco` and `ultralytics` on the host and rerun `./reproduce.sh`.
-3. **Supply `OPENROUTER_API_KEY`:**
-   - Required to run `spike/llm_probe.py` (C03) and the live-LLM condition in `irobots_eval/exp_rq0.py`.
-4. **Capture real ESP32-CAM frames (`data/real/`) with measured ChArUco/marker calibration:**
-   - Required to replace `pending_operator_capture` in `runs/real/eval.json` and to run `esp32_cam` mode with a validated `MarkerCalibration` file.
+1. **Install `mujoco` and `ultralytics` in your host `.venv` and rerun `./reproduce.sh`:**
+   ```bash
+   tools/install_deps.sh
+   tools/fetch_weights.sh
+   ./reproduce.sh
+   ```
+   This will replace the `"fallback sim"` labels in `runs/` and `docs/RESULTS.md` with full MuJoCo physics/rendering and run `test_the_analytic_model_matches_the_simulator` (`0.0000 um`).
+2. **Provide `OPENROUTER_API_KEY` and run C03 + live-LLM RQ0:**
+   ```bash
+   export OPENROUTER_API_KEY="sk-or-v1-..."
+   .venv/bin/python spike/llm_probe.py
+   .venv/bin/python -m irobots_eval.exp_rq0
+   .venv/bin/python tools/generate_results_md.py
+   ```
+3. **Capture real ESP32-CAM frames (`data/real/`) with a measured ChArUco/marker calibration:**
+   ```bash
+   export BOARD_IP="<esp32-cam-ip>"
+   .venv/bin/python tools/capture_real_frames.py --board board.yaml --out data/real/ --count 300
+   .venv/bin/python tools/capture_real_frames.py --eval data/real/ --report runs/real/eval.json
+   .venv/bin/python tools/generate_results_md.py
+   ```
+4. **Launch the Web Control Console against the live Python server:**
+   ```bash
+   PYTHONPATH="ros2_ws/src/irobots_core:ros2_ws/src/irobots_nodes:ros2_ws/src/irobots_msgs:ros2_ws/src/irobots_eval" \
+     .venv/bin/python -m irobots_nodes.web_node --port 8080
+   ```
+   Then open `http://127.0.0.1:8080` in your browser.
