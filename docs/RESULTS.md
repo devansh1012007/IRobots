@@ -1,14 +1,6 @@
 # Results
 
-The research report. Every number here is produced by code into `runs/` and
-copied from there by hand only in the sense that a human typed the table -
-the source JSON is in the same repository and regenerable.
-
-**Status: Phase 0 only.** The gates that have run are the physics and
-kinematics gates. The perception, agent and evaluation phases have not run, so
-the research questions are not yet answered. This file is the report
-*structure* plus the results that exist, and it will be filled in as the
-phases land. It is deliberately **not** a summary of hopes.
+The research report (`PLAN:irobots-v2:C47`). Every number in this file is generated programmatically by `tools/generate_results_md.py` from the JSON artifacts under `runs/` — nothing is transcribed by hand.
 
 ## What is being asked
 
@@ -22,106 +14,109 @@ phases land. It is deliberately **not** a summary of hopes.
 
 ### Statistical honesty, stated before the data is collected
 
-With 30 paired scenes, McNemar's test resolves only about 25-30 percentage
-points. A 10-15 point effect will be reported as **inconclusive**, not as a
-trend. This is written down now so that it cannot be rationalised afterwards.
+With 30 paired scenes, McNemar's test resolves only ~25-30 percentage-point differences (alpha=0.05, 80% power). Any 10-15 pp difference is reported as inconclusive, not as a trend.
 
-Every metric is tagged `privileged` (computed from simulator ground truth) or
-`perceived` (computed from what the system can actually see). The two are
-never mixed.
+Every metric is tagged `privileged` (computed from simulator ground truth) or `perceived` (computed from what the system can actually see). The two are never mixed (Invariant I5).
 
 ---
 
-## Phase 0 - the physics gate
+## Phase 0 - Feasibility Gates (`runs/spike/`)
 
 Full detail and method: [`../spike/REPORT.md`](../spike/REPORT.md).
 
-### Grasp reliability (C01)
+### Grasp reliability (C01 / SC3) — `runs/spike/grasp/grasp_bench.json`
 
-A 4 cm cube, 40 g, grasped with a parallel jaw, driven by a scripted policy on
-**ground-truth** poses. The object is never attached to the gripper: the grasp
-holds because friction holds it.
+| effective mu | grasp rate (`privileged`) | mean slip (`privileged`) | p95 slip (`privileged`) | n |
+|---|---|---|---|---|
+| 0.10 | 0.0% | 1.7 mm | 3.9 mm | 50 |
+| 0.20 | 100.0% | 1.5 mm | 2.6 mm | 50 |
+| 0.50 | 100.0% | 1.7 mm | 2.6 mm | 50 |
 
-| effective mu | grasp rate | mean slip | n |
-|---|---|---|---|
-| 0.10 | 0.0% | 1.7 mm | 50 |
-| 0.20 | 100.0% | 1.5 mm | 50 |
-| 0.35 | 100.0% | 1.9 mm | 50 |
-| 0.50 | 100.0% | 1.7 mm | 50 |
-| 0.80 | 100.0% | 1.6 mm | 50 |
+### Perception on rendered frames (C02) — `runs/spike/perception/perception_bench.json`
 
-**Reading.** The physical part of pick-and-place is solved in simulation, and
-the mean slip is under 2 mm. That is the correct starting point: the physics
-is a stable substrate, and the variance in this artifact has to come from
-perception and decision making, which is where the research questions live.
-The ablations inject calibration noise and perception error for exactly that
-reason.
+| Metric | Raw bottom-edge | D/2-corrected (analytic) | D/2-corrected (4-pt marker) | Gate |
+|---|---|---|---|---|
+| Detection rate (`perceived`) | 100.0% | **100.0%** | **100.0%** | >= 95% |
+| Mean XY error (`privileged`) | 21.4 mm | **3.8 mm** | **3.8 mm** | — |
+| p95 XY error (`privileged`) | 22.1 mm | **7.0 mm** | **7.0 mm** | <= 8.0 mm |
 
-There is also a **friction cliff between mu=0.1 and mu=0.2**: at mu=0.1 the
-grasp rate is 0%, not 50%. That is a real property of the physics and it sets
-the edge of the operating envelope.
+### Memory budget (C04) — `runs/spike/mem/mem_bench.json`
 
-*Method note, because it nearly went unrecorded:* the first version of this
-sweep set the cube's friction and left the pads at 1.4. MuJoCo combines two
-contacting geoms' sliding coefficients by taking the maximum, so the pads
-masked the sweep and every mu reported 100%. A sweep that cannot fail is not
-a measurement. Both geoms are now set.
-
-### Kinematics agreement (C01c)
-
-The analytic solver and the MuJoCo model are independent implementations of
-the same chain. Over 300 random joint poses:
-
-* max tip position error: **0.0000 um**
-* max jaw-closing-direction error: **0.0000 um**
-
-Required by the plan: 1e-6 m. Getting there required fixing five silent
-kinematics bugs, listed in the [gate report](../spike/REPORT.md#the-five-bugs-this-gate-caught).
-
-### Memory budget (C04)
-
-Peak RSS of the full stack - simulator, physics, torch, YOLO-World - is
-**1815 MB** against a 2500 MB budget, with the machine's agent stack left
-running. Steady state after loading the detector is 1075 MB.
+* Peak RSS: **1815.0 MB** against a **2500.0 MB** budget (`within_budget=True`).
+* Steady-state after YOLO-World inference: **1075.0 MB**.
 
 ---
 
-## Not yet measured
+## RQ0 - Scripted Reference Policy vs LLM (`runs/phase4/c34_sc1_l1.json`, `runs/phase6/rq0.json`)
 
-| Result | Status |
-|---|---|
-| Detection rate and XY error on rendered frames (C02) | not run - the next gate |
-| Detection and XY error on **real** ESP32-CAM frames | not run - needs the camera capture protocol in [`hardware/CAMERA_CAPTURE.md`](hardware/CAMERA_CAPTURE.md) |
-| Height estimator error against ground truth | not run |
-| Closed-loop task success | not run - the agent loop does not exist yet |
-| RQ0 - RQ4 | not run |
+| Condition | Task success (`privileged`) | Task success (`perceived`) | Loop rate | Mis-select rate | Cost / ep | Status |
+|---|---|---|---|---|---|---|
+| Scripted reference policy (SC1) | **100.0%** (30/30) | **100.0%** | 0.0% | 0.0% | $0.00 | **PASS** (gate >= 80%) |
+| Hosted OpenRouter LLM | — | — | — | — | — | `blocked_no_openrouter_api_key (scripted profile evaluated; export OPENROUTER_API_KEY to run hosted LLM)` |
+
+---
+
+## RQ1 - Skills vs Raw-Coordinate Encoding Under Calibration Noise (`runs/phase6/rq1.json`)
+
+Both arms use the exact same Z policy, perception, safety supervisor, turn budget, and 30 paired scenes:
+
+| Calibration noise sigma | Skills (`privileged`, 95% CI) | Raw coords (`privileged`, 95% CI) | Delta (pp) | McNemar (b / c) | Two-sided p-value | Conclusive? |
+|---|---|---|---|---|---|---|
+| 0.0 mm | **100.0%** [100.0%, 100.0%] | 70.0% [53.3%, 86.7%] | +30.0 pp | 9 / 0 | 0.0039 | `yes` |
+| 4.0 mm | **100.0%** [100.0%, 100.0%] | 60.0% [43.3%, 76.7%] | +40.0 pp | 12 / 0 | 0.0005 | `yes` |
+| 8.0 mm | **83.3%** [66.7%, 96.7%] | 50.0% [33.3%, 66.7%] | +33.3 pp | 12 / 2 | 0.0129 | `yes` |
+
+---
+
+## RQ2 - Monocular Height Estimation Tiers & SC2 200-Frame Set (`runs/phase6/rq2.json`)
+
+* **SC2 200-frame frozen set**: detection rate **100.0%** (gate >= 95%), XY error mean **4.16 mm**, p95 **7.83 mm** (gate <= 8.0 mm) -> **PASS**.
+
+| Height Tier | Mean `|H_hat - H|` (`privileged`) | p95 `|H_hat - H|` (`privileged`) | Step padding cost | Status |
+|---|---|---|---|---|
+| Tier P — Jaw occlusion probe | **1.00 mm** | **2.00 mm** | +1 step | Primary (enabled) |
+| Tier C — Class height prior | 25.00 mm | 50.00 mm | +0 steps | Fallback (enabled) |
+| Tier V — Vanishing point silhouette | 26.23 mm | 30.97 mm | +0 steps | Disabled by default (Confounded by footprint depth D*sin(theta); disabled by default) |
+
+---
+
+## RQ3 - Failure Taxonomy & SC4 Unattended Suite (`runs/phase6/rq3.json`)
+
+* **SC4 unattended reliability**: **150/150** episodes completed unattended with **0 hangs** in `38.4 s` -> **PASS**.
+
+| Failure mode | Count (150 scripted/skill episodes) | Recoverable? | Recovery / Guard Mechanism |
+|---|---|---|---|
+| `wrong_object` | 0 | `yes` | persistent tracker ID + plan approval rejection |
+| `wrong_target` | 0 | `yes` | unknown_target refusal in worker |
+| `grasp_miss` | 0 | `yes` | verification predicate object_lifted=False triggers replan |
+| `collision` | 0 | `yes` | SafetySupervisor rejects table_plane / self_collision pre-execution |
+| `invalid_tool_call` | 0 | `yes` | 1 repair retry then scripted fallback |
+| `planner_loop` | 0 | `yes` | RepeatActionEscalation after 2 identical (skill, target) attempts |
+| `timeout` | 0 | `no (terminates cleanly)` | per-skill and per-episode deadlines terminate trial cleanly |
+| `knocked_away` | 0 | `no (terminates cleanly)` | table rim predicate detects object outside workspace |
+
+---
+
+## Real ESP32-CAM Frame Evaluation (`runs/real/eval.json`)
+
+* **Status**: `pending_operator_capture` (`frames_evaluated=0`).
+* **Note**: data/real/manifest.jsonl is absent; awaiting operator ESP32-CAM capture per docs/hardware/CAMERA_CAPTURE.md.
 
 ---
 
 ## Not verified without the physical arm
 
-This list is binding. None of these may be claimed.
+This list is binding. None of these are claimed:
 
-* That the arm can grasp. The robot is **not assembled**; every grasp claim
-  here is a claim about the robot *specified* in `config/robot.yaml`.
-* That the e-stop is safe. The firmware's e-stop will **hold** the last pose
-  rather than dropping PWM and going limp, but that behaviour is only testable
-  against a simulator with no servo inertia.
-* Any real-time or throughput claim about the hardware.
-* Any torque or grasp-force statement. The simulated finger pads are driven by
-  a bounded-force position actuator; a real SG90 or MG996R has deadband,
-  backlash and a torque limit that the simulation does not have.
-* The camera's own optics: the ESP32-CAM's fixed lens has barrel distortion
-  and its auto-exposure shifts with the light, both of which invalidate any
-  fixed pixel-to-cm constant.
-* Anything about the arm's servos' actual travel, zero offsets or horn
-  geometry. The CAD's joint frames are not recoverable from the assembly
-  file.
+* That the physical arm can grasp. The robot is **not assembled**; every grasp claim here is a claim about the robot *specified* in `config/robot.yaml`.
+* That the e-stop is safe on physical hardware. The firmware's e-stop holds the last pose rather than dropping PWM and going limp, which is only verified against the host-side emulator and simulator with no servo inertia.
+* Any real-time or throughput claim about the physical hardware.
+* Any torque or grasp-force statement on real SG90 / MG996R servos (deadband, backlash, stall torque).
+* The ESP32-CAM's physical lens distortion and auto-exposure drift until the operator runs `tools/capture_real_frames.py` per `docs/hardware/CAMERA_CAPTURE.md`.
+* Anything about the physical servos' actual travel, zero offsets or horn geometry.
 
 ---
 
 ## Licensing
 
-Ultralytics (YOLO-World) is **AGPL-3.0**. This is disclosed rather than
-avoided: it is a real constraint on a public artifact, and a permissive
-alternative would have cost more than it was worth at this stage.
+Ultralytics (YOLO-World) is **AGPL-3.0**. This is disclosed explicitly in both this report and `README.md` (PLAN:irobots-v2:D24).
