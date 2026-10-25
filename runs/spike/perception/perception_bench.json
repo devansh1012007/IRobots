@@ -3,9 +3,9 @@
     "trials": 50,
     "render_backend": "pinhole_rasterizer",
     "detection_rate": 1.0,
-    "mean_detect_s": 0.03774285712017445,
-    "p95_detect_s": 0.04750306035002723,
-    "mean_render_s": 0.0087058038199757,
+    "mean_detect_s": 0.038862101399936365,
+    "p95_detect_s": 0.0539698070997474,
+    "mean_render_s": 0.008837015399985831,
     "raw_err_mm": {
       "mean": 21.401261748946595,
       "p95": 22.066633233341
@@ -40,10 +40,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.05690183399929083,
+      "detect_s": 0.05610436499773641,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.005510836999746971,
+      "render_s": 0.006413970000721747,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -77,10 +77,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03201201299816603,
+      "detect_s": 0.031016805001854664,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.006351222000375856,
+      "render_s": 0.005048421000537928,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -114,10 +114,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03516442700129119,
+      "detect_s": 0.0316565190005349,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.0050921869988087565,
+      "render_s": 0.007780817002640106,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -151,10 +151,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04758678600046551,
+      "detect_s": 0.03689799099811353,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.011726438002369832,
+      "render_s": 0.009161328001937363,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -188,10 +188,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04528788899915526,
+      "detect_s": 0.03704762799679884,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.014262677999795415,
+      "render_s": 0.007608945001265965,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -225,10 +225,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04740072899949155,
+      "detect_s": 0.04181259699907969,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.006715807001455687,
+      "render_s": 0.009517935999610927,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -262,10 +262,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03695288699964294,
+      "detect_s": 0.04021964500134345,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.006551177000801545,
+      "render_s": 0.005124459999933606,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -299,10 +299,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04069476899894653,
+      "detect_s": 0.04020219599988195,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007832477000192739,
+      "render_s": 0.005205181001656456,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -336,10 +336,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.02254070699927979,
+      "detect_s": 0.027895117000298342,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.004854659000557149,
+      "render_s": 0.008201069002097938,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -373,10 +373,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.02188999200006947,
+      "detect_s": 0.024704596999072237,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.011923101999855135,
+      "render_s": 0.011893700000655372,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -410,10 +410,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04620555300061824,
+      "detect_s": 0.04192376900027739,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.010242223001114326,
+      "render_s": 0.014675350998004433,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -447,10 +447,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03823028199985856,
+      "detect_s": 0.03870593499959796,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.010993580999638652,
+      "render_s": 0.01599110199822462,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -484,10 +484,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.044796726000640774,
+      "detect_s": 0.04965682699912577,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008627168997918488,
+      "render_s": 0.008364885001356015,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -521,10 +521,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.0469999140004802,
+      "detect_s": 0.040756411999609554,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008586271000240231,
+      "render_s": 0.008137353997881291,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -558,10 +558,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.023460501000954537,
+      "detect_s": 0.02553757200075779,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.0054151420008565765,
+      "render_s": 0.008547012999770232,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -595,10 +595,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.02540695700008655,
+      "detect_s": 0.02494380799907958,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.00791524500164087,
+      "render_s": 0.00858907099973294,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -632,10 +632,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.043525434000912355,
+      "detect_s": 0.04039660100170295,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.016186607997951796,
+      "render_s": 0.010479340999154374,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -669,10 +669,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04396802599876537,
+      "detect_s": 0.04021138499956578,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009607089999917662,
+      "render_s": 0.010823175001860363,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -706,10 +706,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03772625100100413,
+      "detect_s": 0.03899300700140884,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008111778999591479,
+      "render_s": 0.00802821100296569,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -743,10 +743,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.049059101002058014,
+      "detect_s": 0.04334612200182164,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008095056997262873,
+      "render_s": 0.007569665998744313,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -780,10 +780,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.025445333998504793,
+      "detect_s": 0.023708750999503536,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.00957559400194441,
+      "render_s": 0.008041085999138886,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -817,10 +817,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.029418445003102534,
+      "detect_s": 0.031351974001154304,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.010277229001076194,
+      "render_s": 0.008975869001005776,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -854,10 +854,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04152625999995507,
+      "detect_s": 0.06182870300108334,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008735901999898488,
+      "render_s": 0.02044965700042667,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -891,10 +891,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.044487112001661444,
+      "detect_s": 0.06393526800093241,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.00931927499914309,
+      "render_s": 0.010503895002329955,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -928,10 +928,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04331403899777797,
+      "detect_s": 0.03807349699854967,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.00840653100021882,
+      "render_s": 0.009778491999895778,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -965,10 +965,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04116480499942554,
+      "detect_s": 0.04833982099808054,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.010311096000805264,
+      "render_s": 0.00859254899842199,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1002,10 +1002,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.02165180500014685,
+      "detect_s": 0.03595442599907983,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.004292524998163572,
+      "render_s": 0.008410856000409694,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1039,10 +1039,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.021468317998369457,
+      "detect_s": 0.02355977799743414,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009610160999727668,
+      "render_s": 0.008395560998906149,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1076,10 +1076,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04339738000271609,
+      "detect_s": 0.04712806399766123,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009022212001582375,
+      "render_s": 0.009634717000153614,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1113,10 +1113,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04287299099814845,
+      "detect_s": 0.03870657399966149,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008168306998413755,
+      "render_s": 0.00614562400005525,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1150,10 +1150,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.037878348000958795,
+      "detect_s": 0.043403226998634636,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007917791001091246,
+      "render_s": 0.00929206000000704,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1187,10 +1187,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.040800728002068354,
+      "detect_s": 0.03901665200100979,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008263005998742301,
+      "render_s": 0.004674240997701418,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1224,10 +1224,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.02914721799970721,
+      "detect_s": 0.030234863002988277,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.0065159580008185,
+      "render_s": 0.0076862690002599265,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1261,10 +1261,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03407032100221841,
+      "detect_s": 0.02774322699769982,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007884528000431601,
+      "render_s": 0.004822578001039801,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1298,10 +1298,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04124742100248113,
+      "detect_s": 0.04234563899808563,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009082158998353407,
+      "render_s": 0.006824910000432283,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1335,10 +1335,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03691530200012494,
+      "detect_s": 0.04126315500252531,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.006515084998682141,
+      "render_s": 0.006344950998027343,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1372,10 +1372,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03701503300180775,
+      "detect_s": 0.04009988799953135,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008050771000853274,
+      "render_s": 0.008557496999856085,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1409,10 +1409,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.044284026997047476,
+      "detect_s": 0.045110071998351486,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007014181999693392,
+      "render_s": 0.008180321998224827,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1446,10 +1446,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.025049875999684446,
+      "detect_s": 0.028861783001048025,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.008393494998017559,
+      "render_s": 0.008586253999965265,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1483,10 +1483,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.023391023998556193,
+      "detect_s": 0.022211430998140713,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.012742135997541482,
+      "render_s": 0.01166131799982395,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1520,10 +1520,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.038617154001258314,
+      "detect_s": 0.051360903002205305,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009787589999177726,
+      "render_s": 0.0107275420014048,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1557,10 +1557,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04104913400078658,
+      "detect_s": 0.04601175900097587,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.0098377670001355,
+      "render_s": 0.008264077998319408,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1594,10 +1594,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.044509303999802796,
+      "detect_s": 0.04252456100221025,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009079792002012255,
+      "render_s": 0.00854599999729544,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1631,10 +1631,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04624360600064392,
+      "detect_s": 0.04068689600171638,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007823086001735646,
+      "render_s": 0.005354924000130268,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1668,10 +1668,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.02745585199954803,
+      "detect_s": 0.03474556099899928,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007834446001652395,
+      "render_s": 0.011671897998894565,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1705,10 +1705,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.03384668799844803,
+      "detect_s": 0.031228176998411072,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007700711001234595,
+      "render_s": 0.009404282998730196,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1742,10 +1742,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.042261374001100194,
+      "detect_s": 0.041716358999110525,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.009532089999993332,
+      "render_s": 0.01325073200132465,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1779,10 +1779,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.038265705999947386,
+      "detect_s": 0.04773270700025023,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.00972832699699211,
+      "render_s": 0.00980034999884083,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1816,10 +1816,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.04354113999943365,
+      "detect_s": 0.04136795700105722,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.011836374000267824,
+      "render_s": 0.005347177997464314,
       "detected": true,
       "label": "red",
       "confidence": 1.0,
@@ -1853,10 +1853,10 @@
       "labels": [
         "red"
       ],
-      "detect_s": 0.040996333002112806,
+      "detect_s": 0.040824499003065284,
       "semantic_labels": [],
       "semantic_ms": 0.0,
-      "render_s": 0.007431316000293009,
+      "render_s": 0.006764083002053667,
       "detected": true,
       "label": "red",
       "confidence": 1.0,

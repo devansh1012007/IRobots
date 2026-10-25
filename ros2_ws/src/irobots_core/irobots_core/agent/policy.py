@@ -14,6 +14,7 @@ from typing import Any
 
 from ..config import REPO_ROOT, load_yaml
 from ..kinematics import inverse_kinematics
+from ..perception.camera_source import CameraFrameSource, CameraSourceConfig, build_camera_source
 from ..perception.geometric import GeometricDetector
 from ..perception.grasp import propose_grasp_candidate
 from ..perception.height import HeightEstimator
@@ -64,6 +65,7 @@ def evaluate_scripted_policy_l1(
     policy: ScriptedReferencePolicy | None = None,
     seeds: Iterable[int] = SHARED_EVAL_SEEDS,
     write_run_json: bool = True,
+    camera_source: CameraFrameSource | None = None,
 ) -> dict[str, Any]:
     """Run the scripted reference policy across the 30 seeded L1 scenes (SC1 gate)."""
     pol = policy or ScriptedReferencePolicy()
@@ -84,6 +86,7 @@ def evaluate_scripted_policy_l1(
         workspace_radius=robot.safety.workspace_radius,
     )
     height_est = HeightEstimator.from_config(p_cfg, camera=camera)
+    cam_src_cfg = CameraSourceConfig.from_configs(p_cfg, scene_cfg, source_override='sim')
 
     seed_list = list(seeds)
     results: list[dict[str, Any]] = []
@@ -93,6 +96,7 @@ def evaluate_scripted_policy_l1(
         sim.reset(dict(robot.home_pose), robot.gripper.max_opening)
         sim.step(50)
 
+        cam_src = camera_source or build_camera_source(cam_src_cfg, sim=sim)
         tracker = ObjectTracker(TrackerConfig(confirm_frames=1))
         supervisor = SafetySupervisor(robot)
         completed: list[str] = []
@@ -100,7 +104,7 @@ def evaluate_scripted_policy_l1(
 
         for _turn in range(3):
             # 1. Perceive current frame (paused sim, I6)
-            frame = sim.render()
+            frame = cam_src.capture(sim_time_s=sim.total_steps * sim.dt).rgb
             dets = detector.detect(frame)
             xy_list = []
             for d in dets:

@@ -3,7 +3,7 @@
 - **Branch:** `feature/phase0-spikes`
 - **Virtualenv recorded:** `/tmp/irobots_venv` (mirrored from `/working_dir/c_b112c06ca7ff75be/venv`)
 - **Test & Lint Summary:**
-  - `pytest ros2_ws/src/irobots_core/tests`: **80 passed, 1 skipped** (`test_the_analytic_model_matches_the_simulator` skipped when C `mujoco` wheel is absent in offline sandbox; previously verified on host at `0.0000 um`)
+  - `pytest ros2_ws/src/irobots_core/tests`: **84 passed, 1 skipped** (`test_the_analytic_model_matches_the_simulator` skipped when C `mujoco` wheel is absent in offline sandbox; previously verified on host at `0.0000 um`)
   - `ruff check`: **All checks passed!** (`0` errors across all packages, tools, and tests)
   - `mypy --strict`: **Success: no issues found** across `irobots_core`, `irobots_nodes`, `irobots_msgs`, `irobots_eval`, and `irobots_bringup`
 
@@ -80,6 +80,7 @@
 | **C62** | `tools/weight_hashes.py` | done | T63 | SHA-256 hash recorder for `*.pt` model weights (`test_packaging.py`) |
 | **C63** | `.github/workflows/ci.yml` | done | T64 | Headless CI workflow (ruff, mypy, pytest, firmware header check) (`test_packaging.py`) |
 | **C64** | `README.md` | done | T65 | Rewritten with honest status table, `reproduce.sh`, legacy freeze verification, and AGPL-3.0 disclosure (`test_packaging.py`) |
+| **C65** | `irobots_core/perception/camera_source.py`, `config/perception.yaml`, `loop.py`, `policy.py`, `sim_node.py` | done | T66-T70 | Configurable camera source switching between `sim` (`SimCameraSource`) and `esp32_cam` (`ESP32CameraSource`), verified end-to-end in `ClosedLoopRunner` (`test_camera_source.py`) |
 
 ## 3. Needs Operator
 

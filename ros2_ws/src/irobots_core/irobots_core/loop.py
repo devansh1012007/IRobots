@@ -26,6 +26,7 @@ from .agent.worker import RepeatActionEscalation, WorkerAgent
 from .config import load_yaml
 from .estop import EStopController
 from .kinematics import inverse_kinematics
+from .perception.camera_source import CameraFrameSource, CameraSourceConfig, CameraSourceMode, build_camera_source
 from .perception.detector import filter_detections_by_vocabulary
 from .perception.geometric import GeometricDetector
 from .perception.grasp import propose_grasp_candidate
@@ -54,6 +55,7 @@ class EpisodeSummary:
     sim_seconds: float
     action_log_sha256: str
     failure_mode: str = "none"
+    camera_source: str = "sim"
 
 
 class ClosedLoopRunner:
@@ -65,6 +67,7 @@ class ClosedLoopRunner:
         scene_cfg: Mapping[str, Any],
         *,
         estop: EStopController | None = None,
+        camera_source_override: str | CameraSourceMode | None = None,
     ) -> None:
         self.robot = robot
         self.scene_cfg = scene_cfg
@@ -86,6 +89,9 @@ class ClosedLoopRunner:
         )
         self.height_estimator = HeightEstimator.from_config(p_cfg, camera=self.camera)
         self.vocabulary: list[str] = list(p_cfg.get("vocabulary", ["red block", "blue block", "bin"]))
+        self.camera_source_config = CameraSourceConfig.from_configs(
+            p_cfg, scene_cfg, source_override=camera_source_override
+        )
 
     def run_episode(
         self,
@@ -93,6 +99,7 @@ class ClosedLoopRunner:
         task_path: str | Path = "config/tasks/l1.yaml",
         seed: int = 0,
         jsonl_path: str | Path | None = None,
+        camera_source: CameraFrameSource | None = None,
     ) -> EpisodeSummary:
         task = load_task_spec(task_path)
         seeded = build_seeded_scene(self.robot, self.scene_cfg, task, seed=seed)
@@ -100,6 +107,7 @@ class ClosedLoopRunner:
         sim.reset(dict(self.robot.home_pose), self.robot.gripper.max_opening)
         sim.step(50)
 
+        cam_src = camera_source or build_camera_source(self.camera_source_config, sim=sim)
         tracker = ObjectTracker(TrackerConfig(confirm_frames=1))
         supervisor = SafetySupervisor(self.robot)
         planner = TaskPlanner()
@@ -124,7 +132,8 @@ class ClosedLoopRunner:
                 break
 
             # 1. OBSERVE (sim is paused during observation and planning: Invariant I6)
-            frame = sim.render()
+            captured = cam_src.capture(sim_time_s=sim.total_steps * sim.dt)
+            frame = captured.rgb
             observations_taken += 1
             skills_this_obs = 0
 
@@ -309,4 +318,5 @@ class ClosedLoopRunner:
             sim_seconds=sim_sec,
             action_log_sha256=log_hash,
             failure_mode=failure_mode,
+            camera_source=cam_src.mode.value,
         )

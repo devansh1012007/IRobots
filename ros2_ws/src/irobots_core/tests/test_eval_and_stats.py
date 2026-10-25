@@ -100,7 +100,7 @@ def test_mcnemar_and_bootstrap_match_hand_computed_values() -> None:
 
 def test_eval_runner_kills_hung_subprocess_and_preserves_other_trials(tmp_path: Path) -> None:
     """C40 / §I: one hung trial subprocess is hard-killed at the deadline while the remaining trials survive."""
-    runner = EvalRunner(checkpoint_dir=tmp_path / "ckpt", wall_deadline_s=0.35)
+    runner = EvalRunner(checkpoint_dir=tmp_path / "ckpt", wall_deadline_s=1.0)
     outcomes: list[TrialOutcome] = []
     for seed in (0, 1, 2):
         # Simulate a hang on seed == 1

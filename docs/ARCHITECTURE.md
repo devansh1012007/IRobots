@@ -161,6 +161,25 @@ camera cannot observe object height at all: a vertical object's height
 projects to almost no pixels. The legacy design specified straight-down, which
 is why its Z was guessed.
 
+
+### Camera frame sources (`sim` vs `esp32_cam`)
+
+`config/perception.yaml` (`perception.camera_source`) switches the entire
+perception and closed-loop pipeline between two implementations of
+`CameraFrameSource` (`irobots_core/perception/camera_source.py`,
+`PLAN:irobots-v2:C65`):
+
+| Source (`perception.camera_source.source`) | Implementation | How it captures |
+|---|---|---|
+| `sim` (default) | `SimCameraSource` | Renders a `640x480` RGB frame directly from the paused simulator (`MuJoCoSim` or `DeterministicKinematicSim`), stamped with simulated time `sim.total_steps * sim.dt` (Invariant I6). |
+| `esp32_cam` | `ESP32CameraSource` | Fetches a still JPEG from `http://$BOARD_IP/capture` with retries, decodes BGR to RGB, and resizes native `320x240` frames to the `640x480` perception floor. |
+
+You can also override the source at runtime without editing YAML by setting
+`IROBOTS_CAMERA_SOURCE=sim` or `IROBOTS_CAMERA_SOURCE=esp32_cam` (with
+`BOARD_IP=<host[:port]>` exported when using `esp32_cam`). Downstream
+detection, homography, height estimation, tracking, planning, safety, and
+verification run unchanged on both sources.
+
 ## The arm backends
 
 One interface, three implementations:

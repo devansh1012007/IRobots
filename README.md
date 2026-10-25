@@ -11,6 +11,34 @@ tools/install_deps.sh      # CPU-only PyTorch + MuJoCo + YOLO-World + test tools
 ./reproduce.sh             # Run unit tests, Phase 0 gates, RQ0-RQ3 evals, and regenerate docs/RESULTS.md
 ```
 
+
+## Switching Camera Sources (`sim` vs `esp32_cam`)
+
+The full perception and closed-loop stack operates on a unified `CameraFrameSource` (`irobots_core/perception/camera_source.py`, `PLAN:irobots-v2:C65`) configured in `config/perception.yaml`:
+
+```yaml
+perception:
+  camera_source:
+    source: sim          # "sim" (simulation camera) or "esp32_cam" (physical ESP32-CAM HTTP /capture)
+    endpoint_env: BOARD_IP
+    capture_path: /capture
+    timeout_s: 5.0
+    retries: 3
+    resize_to_scene: true
+    provenance: design
+```
+
+Or switch at runtime via environment variables:
+
+```bash
+# Run the full system on the simulation camera (default, hardware-free)
+export IROBOTS_CAMERA_SOURCE=sim
+
+# Run the full system on the physical ESP32-CAM over Wi-Fi
+export IROBOTS_CAMERA_SOURCE=esp32_cam
+export BOARD_IP=192.168.1.50
+```
+
 ## The Six Invariants
 
 | ID | Invariant | Enforced in |

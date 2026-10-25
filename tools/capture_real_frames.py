@@ -26,6 +26,7 @@ import cv2  # noqa: E402
 import numpy as np  # noqa: E402
 
 from irobots_core.config import env_or, load_yaml  # noqa: E402
+from irobots_core.perception.camera_source import ESP32CameraSource  # noqa: E402
 from irobots_core.perception.real_eval import (  # noqa: E402
     evaluate_real_dataset,
     validate_and_record_captured_frame,
@@ -98,7 +99,7 @@ def main() -> int:
 
     board_cfg = load_yaml(args.board)
     board_corners = [(float(p[0]), float(p[1])) for p in board_cfg["corners_table_m"]]
-    capture_url = f"http://{board_ip}/capture"
+    cam_source = ESP32CameraSource(endpoint=board_ip, capture_path="/capture")
     out_dir = Path(args.out)
 
     accepted = 0
@@ -106,7 +107,7 @@ def main() -> int:
     while accepted < args.count and attempts < args.count * 3:
         attempts += 1
         try:
-            frame = fetch_frame_rgb(capture_url)
+            frame = cam_source.capture().rgb
         except Exception as exc:
             print(f"capture retry ({exc})", file=sys.stderr)
             time.sleep(0.5)
