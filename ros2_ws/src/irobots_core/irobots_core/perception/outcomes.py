@@ -1,4 +1,4 @@
-"""Typed outcome predicates for closed-loop verification (PLAN:irobots-v2:C17, C18).
+"""Typed outcome predicates for closed-loop verification (PLAN:irobots-v2:C17, C18, C67-F3).
 
 The verification edge compares the scene before and after a skill execution.
 Because the table in ``config/scene.yaml`` has an explicit 20 mm rim (C18),
@@ -25,6 +25,7 @@ class OutcomeType(StrEnum):
     GRIPPER_AT_POSE = "gripper_at_pose"
     TABLE_HIT = "table_hit"
     SAFETY_REJECTED = "safety_rejected"
+    CAMERA_UNAVAILABLE = "camera_unavailable"
 
 
 @dataclass(frozen=True, slots=True)

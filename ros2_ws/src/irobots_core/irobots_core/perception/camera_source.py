@@ -1,33 +1,42 @@
-"""Configurable camera frame source: simulation camera vs ESP32-CAM (PLAN:irobots-v2:C65).
+"""Configurable camera frame source: simulation camera vs ESP32-CAM (PLAN:irobots-v2:C65, C67-F3).
 
-Allows the entire perception, planning, worker, and verification pipeline to
-operate identically on frames captured from:
+Enforces explicit and safe semantics for the two camera sources:
 1. ``sim`` (:class:`SimCameraSource`): renders directly from the paused simulator
    (`MuJoCoSim` or `DeterministicKinematicSim`), stamped with simulated time
-   ``sim.total_steps * sim.dt`` (Invariant I6).
-2. ``esp32_cam`` (:class:`ESP32CameraSource`): fetches a single JPEG frame from
-   the ESP32-CAM ``GET /capture`` HTTP endpoint configured via ``BOARD_IP`` (no
-   hardcoded IP or port in source, per Hard Rule §4 / T12), converts BGR to RGB,
-   and resizes to the scene camera's ``640x480`` perception floor if needed.
-
-The active camera source is configured in ``config/perception.yaml`` under
-``perception.camera_source.source`` (``sim`` or ``esp32_cam``) and can be
-overridden via the ``IROBOTS_CAMERA_SOURCE`` environment variable.
+   ``sim.total_steps * sim.dt`` (Invariant I6), and uses :class:`AnalyticCalibration`
+   from ``config/scene.yaml``.
+2. ``esp32_cam`` (:class:`ESP32CameraSource`):
+   - Requires a validated :class:`MarkerCalibration` loaded from
+     ``perception.camera_source.calibration_file`` (at least 4 correspondences,
+     reprojection RMS <= ``calibration.max_reprojection_rms_m``). Refuses with
+     :class:`ConfigError` if missing or invalid; never falls back to analytic
+     calibration.
+   - Fetches JPEG frames from ``GET /capture`` configured via ``BOARD_IP``
+     (never exposing credentials in ``capture_host``).
+   - Returns a typed :class:`CameraCaptureError` on capture/timeout failure while
+     honouring per-skill/per-episode deadlines (Invariant I4) so the closed loop
+     records a first-class ``camera_unavailable`` outcome rather than crashing or
+     hanging.
 """
 
 from __future__ import annotations
 
 import time
+import urllib.parse
 import urllib.request
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Any, Protocol
+from pathlib import Path
+from typing import Any, Final, Protocol
 
 import cv2
 import numpy as np
 
-from ..config import PROVENANCE_VALUES, ConfigError, env_or
+from ..config import PROVENANCE_VALUES, REPO_ROOT, ConfigError, env_or, load_yaml
+from .homography import DEFAULT_MAX_RMS_M, MarkerCalibration
+
+HYBRID_MODE_LABEL: Final[str] = "hybrid: real camera + simulated arm"
 
 
 class CameraSourceMode(StrEnum):
@@ -45,6 +54,68 @@ class CapturedFrame:
     timestamp_s: float
     frame_id: int
     source: CameraSourceMode
+    host: str = ""
+    ok: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class CameraCaptureError:
+    """Typed error returned when a camera capture fails or exceeds its deadline (C67-F3, I4)."""
+
+    reason: str = "camera_unavailable"
+    detail: str = ""
+    source: CameraSourceMode = CameraSourceMode.ESP32_CAM
+    host: str = ""
+    timestamp_s: float = 0.0
+    ok: bool = False
+
+
+CaptureOutcome = CapturedFrame | CameraCaptureError
+
+
+def load_marker_calibration_file(
+    calibration_file: str | Path,
+    *,
+    max_rms_m: float = DEFAULT_MAX_RMS_M,
+    min_points: int = 4,
+) -> MarkerCalibration:
+    """Load and validate a :class:`MarkerCalibration` from a YAML/JSON file.
+
+    Raises :class:`ConfigError` if the path is empty, missing, malformed, has
+    fewer than ``min_points`` correspondences, or exceeds ``max_rms_m``.
+    """
+    raw_str = str(calibration_file).strip()
+    if not raw_str:
+        raise ConfigError(
+            "camera_source 'esp32_cam' requires perception.camera_source.calibration_file "
+            "(4+ marker correspondences); refusing to fall back to AnalyticCalibration"
+        )
+    candidate = Path(raw_str)
+    if not candidate.is_absolute():
+        repo_rel = REPO_ROOT / candidate
+        if repo_rel.exists():
+            candidate = repo_rel
+    if not candidate.exists():
+        raise ConfigError(f"calibration_file does not exist: {candidate}")
+
+    data = load_yaml(candidate)
+    img_raw = data.get("image_points")
+    tbl_raw = data.get("table_points")
+    if not isinstance(img_raw, list) or not isinstance(tbl_raw, list):
+        raise ConfigError(
+            f"calibration_file {candidate} must define 'image_points' and 'table_points' lists"
+        )
+    try:
+        image_points = [(float(pt[0]), float(pt[1])) for pt in img_raw]
+        table_points = [(float(pt[0]), float(pt[1])) for pt in tbl_raw]
+        return MarkerCalibration.fit(
+            image_points,
+            table_points,
+            max_rms_m=max_rms_m,
+            min_points=min_points,
+        )
+    except (ValueError, TypeError, IndexError) as exc:
+        raise ConfigError(f"invalid MarkerCalibration in {candidate}: {exc}") from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +130,11 @@ class CameraSourceConfig:
     resize_to_scene: bool
     width: int
     height: int
+    calibration_file: str = ""
+    allow_real_camera_with_sim_arm: bool = False
+    max_reprojection_rms_m: float = DEFAULT_MAX_RMS_M
+    min_markers: int = 4
+    marker_calibration: MarkerCalibration | None = None
     provenance: str = "design"
 
     def __post_init__(self) -> None:
@@ -70,6 +146,11 @@ class CameraSourceConfig:
             raise ConfigError(f"camera timeout_s must be positive, got {self.timeout_s}")
         if self.retries < 1:
             raise ConfigError(f"camera retries must be >= 1, got {self.retries}")
+        if self.source is CameraSourceMode.ESP32_CAM and self.marker_calibration is None:
+            raise ConfigError(
+                "camera_source 'esp32_cam' requires a validated MarkerCalibration; "
+                "never falls back to AnalyticCalibration"
+            )
 
     @classmethod
     def from_configs(
@@ -78,6 +159,9 @@ class CameraSourceConfig:
         scene_cfg: Mapping[str, Any],
         *,
         source_override: str | CameraSourceMode | None = None,
+        calibration_file_override: str | Path | None = None,
+        allow_real_camera_with_sim_arm_override: bool | None = None,
+        marker_calibration_override: MarkerCalibration | None = None,
     ) -> CameraSourceConfig:
         cs_node = perception_cfg.get("camera_source") or {}
         if not isinstance(cs_node, Mapping):
@@ -102,6 +186,38 @@ class CameraSourceConfig:
         if not capture_path.startswith("/"):
             capture_path = "/" + capture_path
 
+        cal_node = perception_cfg.get("calibration") or {}
+        max_rms_m = float(cal_node.get("max_reprojection_rms_m", DEFAULT_MAX_RMS_M))
+        min_markers = int(cal_node.get("min_markers", 4))
+
+        cal_file_str = (
+            str(calibration_file_override)
+            if calibration_file_override is not None
+            else (env_or("IROBOTS_CALIBRATION_FILE") or str(cs_node.get("calibration_file", "")))
+        ).strip()
+
+        allow_hybrid = (
+            bool(allow_real_camera_with_sim_arm_override)
+            if allow_real_camera_with_sim_arm_override is not None
+            else bool(cs_node.get("allow_real_camera_with_sim_arm", False))
+        )
+
+        marker_cal: MarkerCalibration | None = None
+        if mode is CameraSourceMode.ESP32_CAM:
+            if marker_calibration_override is not None:
+                rms = marker_calibration_override.reprojection_rms_m
+                if rms is None or rms > max_rms_m:
+                    raise ConfigError(
+                        f"MarkerCalibration RMS {rms} exceeds max_reprojection_rms_m {max_rms_m}"
+                    )
+                marker_cal = marker_calibration_override
+            else:
+                marker_cal = load_marker_calibration_file(
+                    cal_file_str,
+                    max_rms_m=max_rms_m,
+                    min_points=min_markers,
+                )
+
         return cls(
             source=mode,
             endpoint_env=str(cs_node.get("endpoint_env", "BOARD_IP")),
@@ -111,6 +227,11 @@ class CameraSourceConfig:
             resize_to_scene=bool(cs_node.get("resize_to_scene", True)),
             width=width,
             height=height,
+            calibration_file=cal_file_str,
+            allow_real_camera_with_sim_arm=allow_hybrid,
+            max_reprojection_rms_m=max_rms_m,
+            min_markers=min_markers,
+            marker_calibration=marker_cal,
             provenance=str(cs_node.get("provenance", "design")),
         )
 
@@ -121,7 +242,12 @@ class CameraFrameSource(Protocol):
     @property
     def mode(self) -> CameraSourceMode: ...
 
-    def capture(self, *, sim_time_s: float | None = None) -> CapturedFrame: ...
+    @property
+    def capture_host(self) -> str: ...
+
+    def capture(
+        self, *, sim_time_s: float | None = None, deadline_s: float | None = None
+    ) -> CaptureOutcome: ...
 
 
 class SimCameraSource:
@@ -137,7 +263,14 @@ class SimCameraSource:
     def mode(self) -> CameraSourceMode:
         return CameraSourceMode.SIM
 
-    def capture(self, *, sim_time_s: float | None = None) -> CapturedFrame:
+    @property
+    def capture_host(self) -> str:
+        return ""
+
+    def capture(
+        self, *, sim_time_s: float | None = None, deadline_s: float | None = None
+    ) -> CapturedFrame:
+        _ = deadline_s
         self._frame_seq += 1
         stamp = (
             float(sim_time_s)
@@ -150,7 +283,18 @@ class SimCameraSource:
             timestamp_s=stamp,
             frame_id=self._frame_seq,
             source=CameraSourceMode.SIM,
+            host="",
+            ok=True,
         )
+
+
+def _sanitize_url_and_host(raw_url: str) -> tuple[str, str]:
+    parsed = urllib.parse.urlsplit(raw_url)
+    scheme = parsed.scheme or "http"
+    host = parsed.hostname or ""
+    host_port = f"{host}:{parsed.port}" if parsed.port is not None else host
+    clean_base = f"{scheme}://{host_port}{parsed.path}".rstrip("/")
+    return clean_base, host_port
 
 
 class ESP32CameraSource:
@@ -170,10 +314,8 @@ class ESP32CameraSource:
         clean_ep = endpoint.strip()
         if not clean_ep:
             raise ConfigError("ESP32CameraSource requires a non-empty endpoint")
-        if clean_ep.startswith(("http://", "https://")):
-            self.base_url = clean_ep.rstrip("/")
-        else:
-            self.base_url = f"http://{clean_ep.rstrip('/')}"
+        raw_url = clean_ep if clean_ep.startswith(("http://", "https://")) else f"http://{clean_ep}"
+        self.base_url, self._capture_host = _sanitize_url_and_host(raw_url)
         self.capture_path = capture_path if capture_path.startswith("/") else f"/{capture_path}"
         self.width = width
         self.height = height
@@ -187,44 +329,77 @@ class ESP32CameraSource:
         return CameraSourceMode.ESP32_CAM
 
     @property
+    def capture_host(self) -> str:
+        """Host[:port] of the capture endpoint with any user:password credentials stripped."""
+        return self._capture_host
+
+    @property
     def capture_url(self) -> str:
         return f"{self.base_url}{self.capture_path}"
 
-    def capture(self, *, sim_time_s: float | None = None) -> CapturedFrame:
-        last_err: Exception | None = None
+    def capture(
+        self, *, sim_time_s: float | None = None, deadline_s: float | None = None
+    ) -> CaptureOutcome:
+        stamp = float(sim_time_s) if sim_time_s is not None else time.time()
+        t_start = time.monotonic()
+        last_err: str = "no attempts executed"
         raw_bytes: bytes | None = None
+
         for attempt in range(self.retries):
+            elapsed = time.monotonic() - t_start
+            if deadline_s is not None and elapsed >= deadline_s:
+                last_err = f"camera deadline ({deadline_s:.3f}s) exceeded after {elapsed:.3f}s"
+                break
+            req_timeout = (
+                min(self.timeout_s, max(0.01, deadline_s - elapsed))
+                if deadline_s is not None
+                else self.timeout_s
+            )
             try:
-                with urllib.request.urlopen(self.capture_url, timeout=self.timeout_s) as resp:  # noqa: S310
+                with urllib.request.urlopen(self.capture_url, timeout=req_timeout) as resp:  # noqa: S310
                     if resp.status != 200:
                         raise OSError(f"HTTP status {resp.status}")
                     raw_bytes = resp.read()
                 break
             except Exception as exc:  # noqa: BLE001
-                last_err = exc
+                last_err = str(exc)
                 if attempt + 1 < self.retries:
-                    time.sleep(0.05)
+                    rem = (deadline_s - (time.monotonic() - t_start)) if deadline_s is not None else 0.05
+                    if rem <= 0.0:
+                        break
+                    time.sleep(min(0.05, rem))
 
         if raw_bytes is None:
-            raise RuntimeError(
-                f"failed to capture frame from {self.capture_url} after {self.retries} attempt(s): {last_err}"
+            return CameraCaptureError(
+                reason="camera_unavailable",
+                detail=f"failed to capture frame from {self._capture_host} after {self.retries} attempt(s): {last_err}",
+                source=CameraSourceMode.ESP32_CAM,
+                host=self._capture_host,
+                timestamp_s=stamp,
             )
 
         arr = np.frombuffer(raw_bytes, dtype=np.uint8)
         bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
         if bgr is None:
-            raise ValueError(f"failed to decode JPEG bytes from {self.capture_url}")
+            return CameraCaptureError(
+                reason="camera_unavailable",
+                detail=f"failed to decode JPEG bytes from {self._capture_host}",
+                source=CameraSourceMode.ESP32_CAM,
+                host=self._capture_host,
+                timestamp_s=stamp,
+            )
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         if self.resize_to_scene and (rgb.shape[1] != self.width or rgb.shape[0] != self.height):
             rgb = cv2.resize(rgb, (self.width, self.height), interpolation=cv2.INTER_LINEAR)
 
         self._frame_seq += 1
-        stamp = float(sim_time_s) if sim_time_s is not None else time.time()
         return CapturedFrame(
             rgb=np.asarray(rgb, dtype=np.uint8),
             timestamp_s=stamp,
             frame_id=self._frame_seq,
             source=CameraSourceMode.ESP32_CAM,
+            host=self._capture_host,
+            ok=True,
         )
 
 

@@ -9,12 +9,11 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable, Mapping, Sequence
-from pathlib import Path
 from typing import Any
 
 from ..config import REPO_ROOT, load_yaml
 from ..kinematics import inverse_kinematics
-from ..perception.camera_source import CameraFrameSource, CameraSourceConfig, build_camera_source
+from ..perception.camera_source import CameraCaptureError, CameraFrameSource, CameraSourceConfig, build_camera_source
 from ..perception.geometric import GeometricDetector
 from ..perception.grasp import propose_grasp_candidate
 from ..perception.height import HeightEstimator
@@ -73,8 +72,8 @@ def evaluate_scripted_policy_l1(
     p_cfg = load_yaml("config/perception.yaml")["perception"]
     cam_cfg = scene_cfg["camera"]
     camera = CameraModel(
-        position=tuple(float(c) for c in cam_cfg["position"]),  # type: ignore[arg-type]
-        target=tuple(float(c) for c in cam_cfg["target"]),  # type: ignore[arg-type]
+        position=(float(cam_cfg["position"][0]), float(cam_cfg["position"][1]), float(cam_cfg["position"][2])),
+        target=(float(cam_cfg["target"][0]), float(cam_cfg["target"][1]), float(cam_cfg["target"][2])),
         fov_deg=float(cam_cfg["hfov_deg"]),
         width=int(cam_cfg["width"]),
         height=int(cam_cfg["height"]),
@@ -104,7 +103,10 @@ def evaluate_scripted_policy_l1(
 
         for _turn in range(3):
             # 1. Perceive current frame (paused sim, I6)
-            frame = cam_src.capture(sim_time_s=sim.total_steps * sim.dt).rgb
+            cap = cam_src.capture(sim_time_s=sim.total_steps * sim.dt)
+            if isinstance(cap, CameraCaptureError):
+                break
+            frame = cap.rgb
             dets = detector.detect(frame)
             xy_list = []
             for d in dets:

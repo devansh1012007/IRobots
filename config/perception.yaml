@@ -1,19 +1,21 @@
 # Perception configuration: what the detector looks for, and how heights are
 # estimated when we cannot measure them.
 #
-# PLAN:irobots-v2:C12, C15
+# PLAN:irobots-v2:C12, C15, C65, C67-F3
 
 perception:
 
   # ---------------------------------------------------------------------------
-  # Camera frame source (PLAN:irobots-v2:C65).
+  # Camera frame source (PLAN:irobots-v2:C65, C67-F3).
   #
   # Switches the entire perception and closed-loop stack between the simulator's
   # rendered camera ("sim") and the physical ESP32-CAM HTTP endpoint ("esp32_cam").
   # Can also be overridden at runtime via the IROBOTS_CAMERA_SOURCE env var.
-  # No IP address or port is hardcoded in source (T12); when source is
+  # No IP address, port, or path is hardcoded in source (T12); when source is
   # "esp32_cam", the board host/port is read from the environment variable
-  # named by `endpoint_env` (default: BOARD_IP).
+  # named by `endpoint_env` (default: BOARD_IP), and `calibration_file` MUST
+  # point to a validated MarkerCalibration file (4+ correspondences, RMS <=
+  # `calibration.max_reprojection_rms_m`).
   # ---------------------------------------------------------------------------
   camera_source:
     # sim | esp32_cam
@@ -23,6 +25,8 @@ perception:
     timeout_s: 5.0
     retries: 3
     resize_to_scene: true
+    calibration_file: ""
+    allow_real_camera_with_sim_arm: false
     provenance: design
 
   detector:

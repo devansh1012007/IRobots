@@ -12,7 +12,11 @@ from typing import Any
 
 import numpy as np
 
-from irobots_core.perception.camera_source import CameraFrameSource, SimCameraSource
+from irobots_core.perception.camera_source import (
+    CameraCaptureError,
+    CameraFrameSource,
+    SimCameraSource,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +35,13 @@ class SimJointStateStamp:
 class SimNode:
     """Thin simulator node owning pause/step discipline and sim-time stamping (C23)."""
 
-    def __init__(self, sim: Any, *, use_sim_time: bool = True, camera_source: CameraFrameSource | None = None) -> None:
+    def __init__(
+        self,
+        sim: Any,
+        *,
+        use_sim_time: bool = True,
+        camera_source: CameraFrameSource | None = None,
+    ) -> None:
         if not use_sim_time:
             raise ValueError("Invariant I6 requires use_sim_time=True on SimNode")
         self.sim = sim
@@ -62,7 +72,10 @@ class SimNode:
         t_now = self.sim_time_s
         if self._cached_frame is not None and self._cached_frame.timestamp_s == t_now:
             return SimImageStamp(timestamp_s=t_now, rgb=self._cached_frame.rgb.copy())
-        rgb = self.camera_source.capture(sim_time_s=t_now).rgb.copy()
+        cap = self.camera_source.capture(sim_time_s=t_now)
+        if isinstance(cap, CameraCaptureError):
+            raise RuntimeError(f"camera_unavailable: {cap.detail}")
+        rgb = cap.rgb.copy()
         self._cached_frame = SimImageStamp(timestamp_s=t_now, rgb=rgb)
         return SimImageStamp(timestamp_s=t_now, rgb=rgb.copy())
 

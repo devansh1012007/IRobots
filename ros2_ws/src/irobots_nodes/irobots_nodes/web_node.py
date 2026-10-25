@@ -12,7 +12,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from irobots_core.config import REPO_ROOT, load_yaml
+from irobots_core.config import REPO_ROOT, ConfigError, load_yaml
 from irobots_core.estop import EStopController
 from irobots_core.kinematics import forward_kinematics
 from irobots_core.perception.camera_source import CameraSourceConfig, CameraSourceMode
@@ -39,13 +39,23 @@ class WebConsoleBackend:
     def load_html(self) -> str:
         return self.html_path.read_text(encoding="utf-8")
 
-    def set_camera_source(self, source: str) -> dict[str, Any]:
-        self.camera_source_cfg = CameraSourceConfig.from_configs(
-            self.perception_cfg,
-            self.scene_cfg,
-            source_override=CameraSourceMode(source.strip().lower()),
-        )
-        return {"ok": True, "camera_source": self.camera_source_cfg.source.value}
+    def set_camera_source(
+        self, source: str, *, calibration_file: str | Path | None = None
+    ) -> dict[str, Any]:
+        try:
+            self.camera_source_cfg = CameraSourceConfig.from_configs(
+                self.perception_cfg,
+                self.scene_cfg,
+                source_override=source.strip().lower(),
+                calibration_file_override=calibration_file,
+            )
+            return {"ok": True, "camera_source": self.camera_source_cfg.source.value}
+        except (ConfigError, ValueError) as exc:
+            return {
+                "ok": False,
+                "error": str(exc),
+                "camera_source": self.camera_source_cfg.source.value,
+            }
 
     def get_state_snapshot(self) -> dict[str, Any]:
         fk = forward_kinematics(self.robot, self.pose)

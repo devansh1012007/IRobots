@@ -40,5 +40,6 @@ def test_web_console_backend_switches_camera_source_and_reports_fk(repo_root: Pa
     assert len(snap["tcp_xyz_m"]) == 3
 
     res = backend.set_camera_source("esp32_cam")
-    assert res["ok"] is True
-    assert backend.get_state_snapshot()["camera_source"] == "esp32_cam"
+    assert res["ok"] is False
+    assert "calibration" in res["error"].lower()
+    assert backend.get_state_snapshot()["camera_source"] == "sim"
