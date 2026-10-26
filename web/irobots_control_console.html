@@ -1,938 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IRobots v2 // Operator Telemetry &amp; Closed-Loop Control Console</title>
-  <style>
-    :root {
-      --bg-void: #08090a;
-      --bg-panel: #0f1114;
-      --bg-elevated: #15181d;
-      --bg-hover: #1c2027;
-      --border-hairline: #232830;
-      --border-strong: #323944;
-      --text-primary: #e5e7eb;
-      --text-secondary: #9ca3af;
-      --text-muted: #646d7a;
-      --status-green: #10b981;
-      --status-amber: #f59e0b;
-      --status-red: #ef4444;
-      --status-blue: #3b82f6;
-    }
-    * {
-      box-sizing: border-box;
-      background-image: none !important;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--bg-void);
-      color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 13px;
-      line-height: 1.4;
-      user-select: none;
-    }
-    .mono {
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      font-variant-numeric: tabular-nums;
-    }
-    .topbar {
-      background-color: var(--bg-panel);
-      border-bottom: 1px solid var(--border-hairline);
-      padding: 8px 12px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .row-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-    .badge {
-      padding: 3px 8px;
-      font-size: 11px;
-      border: 1px solid var(--border-strong);
-      background-color: var(--bg-elevated);
-      color: var(--text-secondary);
-    }
-    .badge-ok {
-      background-color: #0b221a;
-      border-color: var(--status-green);
-      color: var(--status-green);
-    }
-    .badge-warn {
-      background-color: #291d0a;
-      border-color: var(--status-amber);
-      color: var(--status-amber);
-    }
-    .badge-err {
-      background-color: #290f12;
-      border-color: var(--status-red);
-      color: var(--status-red);
-    }
-    .workspace-grid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 3fr 6fr 3fr;
-      gap: 8px;
-      padding: 8px;
-    }
-    @media (max-width: 1100px) {
-      .workspace-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    .col-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .panel {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-hairline);
-      display: flex;
-      flex-direction: column;
-    }
-    .panel-fill {
-      flex: 1;
-    }
-    .panel-header {
-      background-color: var(--bg-elevated);
-      border-bottom: 1px solid var(--border-hairline);
-      padding: 6px 10px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .panel-body {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-    }
-    .field-label {
-      display: block;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-secondary);
-      margin-bottom: 4px;
-    }
-    .input-ctrl, .select-ctrl {
-      width: 100%;
-      background-color: var(--bg-elevated);
-      border: 1px solid var(--border-strong);
-      color: var(--text-primary);
-      padding: 5px 8px;
-      font-size: 12px;
-    }
-    .btn-tech {
-      background-color: var(--bg-elevated);
-      border: 1px solid var(--border-strong);
-      color: var(--text-primary);
-      padding: 5px 10px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-tech:hover:not(:disabled) {
-      background-color: var(--bg-hover);
-      border-color: #4b5563;
-    }
-    .btn-tech:disabled {
-      opacity: 0.38;
-      cursor: not-allowed;
-    }
-    .btn-tech-active {
-      background-color: #1f242d;
-      border-color: var(--text-primary);
-      color: #ffffff;
-    }
-    .btn-approve {
-      border-color: var(--status-green);
-      color: var(--status-green);
-    }
-    .btn-estop {
-      background-color: #3b0d11;
-      border: 2px solid var(--status-red);
-      color: #fecaca;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-    }
-    .btn-estop:hover {
-      background-color: #521117;
-    }
-    .btn-estop-latched {
-      background-color: var(--status-red);
-      border-color: #ffffff;
-      color: #08090a;
-    }
-    .viewport-box {
-      position: relative;
-      background-color: var(--bg-void);
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      overflow: hidden;
-    }
-    .viewport-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .viewport-overlay {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background-color: #0f1114;
-      border: 1px solid var(--border-hairline);
-      padding: 4px 8px;
-      font-size: 10px;
-      color: var(--text-secondary);
-      pointer-events: none;
-    }
-    .scroll-box {
-      background-color: var(--bg-void);
-      padding: 8px;
-      overflow-y: auto;
-      max-height: 250px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .chat-card {
-      background-color: var(--bg-panel);
-      border: 1px solid var(--border-hairline);
-      padding: 6px 8px;
-      font-size: 11px;
-    }
-    .chat-card-head {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: var(--text-secondary);
-      margin-bottom: 3px;
-    }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-    .data-table th, .data-table td {
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border-hairline);
-      text-align: left;
-    }
-    .data-table th {
-      background-color: var(--bg-elevated);
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-    .plan-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 5px 8px;
-      border: 1px solid var(--border-hairline);
-      background-color: var(--bg-elevated);
-      font-size: 11px;
-    }
-    .pred-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 6px;
-      border: 1px solid var(--border-hairline);
-      background-color: var(--bg-void);
-      font-size: 10px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IROBOTS v2 operator console</title>
+<style>
+:root{color-scheme:light dark;--bg:#fff;--rail:#f4f4f4;--ctl:#e9e9e9;--line:#d3d3d3;--ink:#0a0a0a;--ink2:#545454;--ink3:#8c8c8c;
+--sans:"Avenir Next","Segoe UI Variable Text","Segoe UI","Helvetica Neue",system-ui,sans-serif;
+--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--mono:ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--rail:#0e0e0e;--ctl:#1c1c1c;--line:#2c2c2c;--ink:#f5f5f5;--ink2:#aaa;--ink3:#707070}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 var(--sans);font-variant-numeric:tabular-nums}
+h2{font:400 16px/1.2 var(--serif);margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h2 small{font:12px var(--sans);color:var(--ink3)}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.brand{font:400 22px var(--serif);letter-spacing:.01em}.brand span{color:var(--ink3);font-size:14px;margin-left:8px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pill{border:1px solid var(--ink3);border-radius:999px;padding:3px 11px;font-size:12px;color:var(--ink2)}
+.pill.dbl{border:3px double var(--ink);color:var(--ink)}.pill.inv{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.conn::before,.mk{content:"";display:inline-block;width:8px;height:8px;border:1.5px solid var(--ink);border-radius:50%;margin-right:7px;vertical-align:baseline}
+.conn.up::before,.mk.done{background:var(--ink)}.mk.now{border-width:4px}.mk.fail{border-radius:0;background:var(--ink)}
+.btn{font:inherit;padding:7px 13px;border:1px solid var(--line);background:var(--ctl);color:var(--ink);border-radius:6px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink3)}.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn.on,.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.estop{font:600 15px var(--sans);padding:11px 26px;border:3px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:999px;cursor:pointer}
+.estop.latched{background:var(--bg);color:var(--ink);border-style:double;border-width:5px}
+main{display:grid;grid-template-columns:300px minmax(0,1fr) 270px;min-height:calc(100vh - 62px)}
+.rail{background:var(--rail);padding:20px;display:flex;flex-direction:column;gap:26px}
+.stage{padding:20px;display:flex;flex-direction:column;gap:22px;min-width:0}
+@media(max-width:1000px){main{grid-template-columns:1fr}}
+label{display:block;color:var(--ink2);font-size:12px;margin-bottom:4px}
+input,select{font:inherit;width:100%;padding:7px 9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.plan div,.kv{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+.plan div span:last-child,.kv span:first-child{color:var(--ink3)}
+#notice{margin:0;min-height:1.4em;color:var(--ink);font-weight:600}
+canvas{display:block;width:100%;border:1px solid var(--line);background:var(--bg)}
+#simCanvas{aspect-ratio:16/8}#camCanvas{aspect-ratio:4/3}
+.cap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;color:var(--ink2);font-size:12px;margin-top:6px}
+.duo{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:22px}@media(max-width:1000px){.duo{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:12px}th{font-weight:500;color:var(--ink3);text-align:left;padding:4px 8px 6px 0}
+td{padding:6px 8px 6px 0;border-top:1px solid var(--line)}.scroll{overflow:auto}
+.bar{height:2px;background:var(--line);position:relative;margin:6px 0 10px}.bar i{position:absolute;top:-4px;width:2px;height:10px;background:var(--ink)}
+.tabs{display:flex;gap:6px;margin-bottom:8px}.log{font:11.5px/1.5 var(--mono);height:190px;overflow:auto;border-top:1px solid var(--line);padding-top:8px;white-space:pre-wrap;word-break:break-all}
+.log .who{color:var(--ink3)}
+</style>
 </head>
 <body>
-
-  <!-- TOP TELEMETRY, CONNECTION & SAFETY HEADER BAR -->
-  <header class="topbar">
-    <div class="row-wrap">
-      <span class="mono" style="font-weight:700; letter-spacing:0.05em;">IROBOTS.V2 // THIN-CLIENT OPERATOR CONSOLE</span>
-      <span id="connectionBanner" class="badge badge-warn mono">CONNECTING TO /api/state...</span>
-      <span id="modeBadge" class="badge badge-ok mono">SIM</span>
-      <span id="safetyBannerBadge" class="badge badge-ok mono">I2 SUPERVISOR: APPROVED (0 REJECTIONS)</span>
-    </div>
-
-    <div class="row-wrap">
-      <div class="row-wrap" role="group" aria-label="Camera Source">
-        <button id="camSimBtn" type="button" class="btn-tech btn-tech-active mono" title="Switch to SimCameraSource (/api/camera_source)">CAM: SIM</button>
-        <button id="camEspBtn" type="button" class="btn-tech mono" title="Switch to ESP32CameraSource (/api/camera_source; requires MarkerCalibration)">CAM: ESP32_CAM</button>
-      </div>
-
-      <div class="badge mono">
-        SIM_T: <span id="simClockDisplay">0.100s</span> / STEPS: <span id="simStepsDisplay">50</span>
-      </div>
-
-      <!-- First-Class E-STOP Button: always enabled and visually dominant (D18 / C39 / F4.7) -->
-      <button id="estopBtn" type="button" class="btn-estop mono" title="Immediate E-Stop interrupt (/api/estop, Key: E)">
-        E-STOP [HOLD]
-      </button>
-    </div>
-  </header>
-
-  <!-- MAIN 3-COLUMN OPERATOR WORKSPACE -->
-  <main class="workspace-grid">
-
-    <!-- LEFT COLUMN: SCENE RESET, TASK PROMPT, PLAN APPROVAL & EXECUTION -->
-    <section class="col-stack">
-      <div class="panel">
-        <div class="panel-header">
-          <span>SCENE &amp; EPISODE RESET</span>
-          <span class="mono">POST /api/reset</span>
-        </div>
-        <div class="panel-body">
-          <div class="grid-2">
-            <div>
-              <label for="taskSelect" class="field-label">Task Suite</label>
-              <select id="taskSelect" class="select-ctrl mono">
-                <option value="L1">L1: Pick &amp; Lift Red Block</option>
-                <option value="L2">L2: Sort Red Block -&gt; Bin</option>
-              </select>
-            </div>
-            <div>
-              <label for="seedSelect" class="field-label">Paired Seed (0-29)</label>
-              <div class="row-wrap" style="flex-wrap:nowrap;">
-                <input id="seedSelect" type="number" min="0" max="29" value="0" class="input-ctrl mono" />
-                <button id="resetSceneBtn" type="button" class="btn-tech mono" title="POST /api/reset">RESET</button>
-              </div>
-            </div>
-          </div>
-          <div>
-            <label for="calibrationFileInput" class="field-label">ESP32 MarkerCalibration File (F3)</label>
-            <input id="calibrationFileInput" type="text" placeholder="Optional path to marker calibration YAML for esp32_cam" class="input-ctrl mono" />
-          </div>
-        </div>
-      </div>
-
-      <div class="panel panel-fill">
-        <div class="panel-header">
-          <span>OPERATOR // PLANNER // WORKER LOG</span>
-          <span id="turnCounterBadge" class="mono">TURN 0</span>
-        </div>
-        <div id="chatStream" class="scroll-box mono"></div>
-        <form id="chatForm" class="panel-body" style="border-top:1px solid var(--border-hairline);">
-          <div class="row-wrap" style="flex-wrap:nowrap;">
-            <input
-              id="chatInput"
-              type="text"
-              value="Pick up the red block and lift it off the table."
-              placeholder="Enter task instruction for TaskPlanner (T40 scene-validated)..."
-              class="input-ctrl"
-            />
-            <button id="sendTaskBtn" type="submit" class="btn-tech mono" title="POST /api/task">PLAN</button>
-          </div>
-        </form>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <span>SKILL PLAN TREE (D11 APPROVAL GATE)</span>
-          <span id="planApprovalStatus" class="mono" style="color:var(--status-amber);">AWAITING APPROVAL</span>
-        </div>
-        <div class="panel-body">
-          <div id="planListContainer" class="col-stack mono"></div>
-          <div class="grid-3">
-            <button id="approvePlanBtn" type="button" class="btn-tech btn-approve mono" title="Approve plan for execution (POST /api/approve, Key: P)">
-              APPROVE [P]
-            </button>
-            <button id="stepSkillBtn" type="button" class="btn-tech mono" disabled title="Approve the skill plan first (D11)">
-              STEP 1 [S]
-            </button>
-            <button id="runLoopBtn" type="button" class="btn-tech mono" disabled title="Approve the skill plan first (D11)">
-              RUN ALL
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CENTER COLUMN: DUAL VIEWPORTS (DRAWN FROM PYTHON API DATA) & TRACKER TABLE -->
-    <section class="col-stack">
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-header">
-            <span>VIEWPORT A // 5-DOF SIM STATE (/api/state)</span>
-            <div class="row-wrap">
-              <button id="simViewIsoBtn" type="button" class="btn-tech btn-tech-active mono">ISO</button>
-              <button id="simViewSideBtn" type="button" class="btn-tech mono">SIDE</button>
-              <button id="simViewTopBtn" type="button" class="btn-tech mono">TOP</button>
-            </div>
-          </div>
-          <div class="viewport-box">
-            <canvas id="simCanvas" width="640" height="480" class="viewport-canvas"></canvas>
-            <div class="viewport-overlay mono">
-              <div>TCP (m): <span id="tcpPoseOverlay">x=+0.000 y=+0.200 z=+0.120</span></div>
-              <div>JAW AZ: <span id="jawAzimuthOverlay">0.0 deg</span> | OPEN: <span id="jawOpeningOverlay">70.0 mm</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <span id="camViewportTitle">VIEWPORT B // CAMERA FRAME (/api/frame.jpg)</span>
-            <button id="refreshFrameBtn" type="button" class="btn-tech mono" title="Reload /api/frame.jpg">REFRESH</button>
-          </div>
-          <div class="viewport-box">
-            <canvas id="camCanvas" width="640" height="480" class="viewport-canvas"></canvas>
-            <div class="viewport-overlay mono">
-              <div>SOURCE: <span id="camSourceOverlay">sim</span></div>
-              <div>MODE: <span id="execModeOverlay">sim</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <span>PERSISTENT OBJECT TRACKER (FROM PYTHON /api/state)</span>
-          <span class="mono">C13 · C14 · C15 · C16</span>
-        </div>
-        <div style="overflow-x:auto;">
-          <table class="data-table mono">
-            <thead>
-              <tr>
-                <th>TRACK_ID</th>
-                <th>LABEL</th>
-                <th>STATUS</th>
-                <th>BOTTOM (px)</th>
-                <th>RAW XY (m)</th>
-                <th>D/2 CORR XY (m)</th>
-                <th>HEIGHT Z (SOURCE)</th>
-              </tr>
-            </thead>
-            <tbody id="trackerTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel panel-fill">
-        <div class="panel-header">
-          <span>EPISODE ACTION-LOG TRANSCRIPT &amp; SHA-256 (replay.py)</span>
-          <span class="mono">SHA-256: <span id="actionHashDisplay">...</span></span>
-        </div>
-        <div id="transcriptContainer" class="scroll-box mono"></div>
-      </div>
-    </section>
-
-    <!-- RIGHT COLUMN: JOINT TELEMETRY, SAFETY OUTCOMES, NDJSON LOG -->
-    <section class="col-stack">
-      <div class="panel">
-        <div class="panel-header">
-          <span>5-DOF JOINT TELEMETRY (/api/config &amp; /api/state)</span>
-          <span id="robotNameBadge" class="mono">irobots_arm_5dof</span>
-        </div>
-        <div id="jointsContainer" class="panel-body mono"></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <span>SAFETY SUPERVISOR &amp; OUTCOMES (I2 / I5)</span>
-          <span id="failureModeBadge" class="mono">failure_mode: none</span>
-        </div>
-        <div class="panel-body mono">
-          <div class="grid-2">
-            <div class="pred-item">
-              <span>PRIVILEGED (I5):</span>
-              <span id="metricPrivSuccess">PENDING</span>
-            </div>
-            <div class="pred-item">
-              <span>PERCEIVED (I5):</span>
-              <span id="metricPercSuccess">PENDING</span>
-            </div>
-          </div>
-          <div id="safetyRejectionOutcome" class="badge badge-ok">
-            LAST SAFETY VERDICT: ok (approved)
-          </div>
-          <div id="predicateGrid" class="grid-2"></div>
-        </div>
-      </div>
-
-      <div class="panel panel-fill">
-        <div class="panel-header">
-          <span>ESP32 ARM NDJSON PROTOCOL LOG</span>
-          <span id="fwStateBadge" class="mono">STATE: ACTIVE</span>
-        </div>
-        <div id="ndjsonLog" class="scroll-box mono"></div>
-      </div>
-    </section>
-
-  </main>
-
-  <script>
-    // Thin-client UI state: Python (/api/config, /api/state, /api/frame.jpg) is the sole authority.
-    const ui = {
-      connected: false,
-      simViewMode: "ISO",
-      config: null,
-      state: null,
-      frameImg: new Image(),
-      frameLoaded: false,
-      pollTimer: null
-    };
-
-    ui.frameImg.addEventListener("load", () => {
-      ui.frameLoaded = true;
-      drawCameraCanvas();
-    });
-
-    async function apiFetch(path, options = {}) {
-      const resp = await fetch(path, {
-        headers: { "Content-Type": "application/json" },
-        ...options
-      });
-      const data = await resp.json();
-      return { status: resp.status, ok: resp.ok, data };
-    }
-
-    function setConnectionStatus(connected, detailText) {
-      ui.connected = connected;
-      const banner = document.getElementById("connectionBanner");
-      banner.textContent = detailText;
-      banner.className = connected ? "badge badge-ok mono" : "badge badge-err mono";
-    }
-
-    async function fetchConfigAndState() {
-      try {
-        if (!ui.config) {
-          const cfgRes = await apiFetch("/api/config");
-          if (cfgRes.ok) {
-            ui.config = cfgRes.data;
-          }
-        }
-        const stRes = await apiFetch("/api/state");
-        if (stRes.ok) {
-          ui.state = stRes.data;
-          setConnectionStatus(true, "CONNECTED // PYTHON AUTHORITY");
-          renderFromPythonState();
-          refreshCameraFrame();
-        } else {
-          setConnectionStatus(false, "DISCONNECTED // RETRYING /api/state...");
-        }
-      } catch (_err) {
-        setConnectionStatus(false, "DISCONNECTED // RETRYING /api/state...");
-      }
-    }
-
-    function refreshCameraFrame() {
-      if (!ui.connected) return;
-      ui.frameImg.src = `/api/frame.jpg?t=${Date.now()}`;
-    }
-
-    function renderFromPythonState() {
-      const st = ui.state;
-      if (!st) return;
-
-      // Mode badge (SIM | HYBRID | REAL CAMERA)
-      const modeBadge = document.getElementById("modeBadge");
-      modeBadge.textContent = st.badge || "SIM";
-      modeBadge.className = st.badge === "HYBRID"
-        ? "badge badge-warn mono"
-        : (st.badge === "REAL CAMERA" ? "badge badge-err mono" : "badge badge-ok mono");
-
-      // Sim clock & steps
-      document.getElementById("simClockDisplay").textContent = `${Number(st.sim_time_s || 0).toFixed(3)}s`;
-      document.getElementById("simStepsDisplay").textContent = String(st.sim_steps || 0);
-
-      // Camera source buttons
-      document.getElementById("camSimBtn").className =
-        st.camera_source === "sim" ? "btn-tech btn-tech-active mono" : "btn-tech mono";
-      document.getElementById("camEspBtn").className =
-        st.camera_source === "esp32_cam" ? "btn-tech btn-tech-active mono" : "btn-tech mono";
-      document.getElementById("camSourceOverlay").textContent = String(st.camera_source || "sim");
-      document.getElementById("execModeOverlay").textContent = String(st.execution_mode || "sim");
-
-      // E-Stop button (always enabled, visually dominant)
-      const estopBtn = document.getElementById("estopBtn");
-      estopBtn.disabled = false;
-      estopBtn.textContent = st.estop ? "CLEAR E-STOP [E]" : "E-STOP [HOLD]";
-      estopBtn.className = st.estop ? "btn-estop btn-estop-latched mono" : "btn-estop mono";
-
-      // Safety verdict banner & distinct rejection outcome
-      const sv = st.safety_verdict || { approved: true, reason: "ok", detail: "ok", rejections: 0 };
-      const safetyBanner = document.getElementById("safetyBannerBadge");
-      const rejOutcome = document.getElementById("safetyRejectionOutcome");
-      if (st.estop) {
-        safetyBanner.textContent = "E-STOP LATCHED // HOLDING POSE (D18)";
-        safetyBanner.className = "badge badge-err mono";
-      } else if (!sv.approved) {
-        safetyBanner.textContent = `I2 REJECTED: ${sv.reason} (${sv.rejections} REJ)`;
-        safetyBanner.className = "badge badge-err mono";
-      } else {
-        safetyBanner.textContent = `I2 SUPERVISOR: APPROVED (${sv.rejections} REJECTIONS)`;
-        safetyBanner.className = "badge badge-ok mono";
-      }
-      rejOutcome.textContent = `LAST SAFETY VERDICT: ${sv.reason} (${sv.detail})`;
-      rejOutcome.className = sv.approved ? "badge badge-ok" : "badge badge-err";
-
-      // Plan approval gate & disabled button reason tooltips (F4.7)
-      const planStatus = document.getElementById("planApprovalStatus");
-      planStatus.textContent = st.plan_approved ? "APPROVED (READY)" : "AWAITING APPROVAL";
-      planStatus.style.color = st.plan_approved ? "var(--status-green)" : "var(--status-amber)";
-
-      const stepBtn = document.getElementById("stepSkillBtn");
-      const runBtn = document.getElementById("runLoopBtn");
-      if (st.estop) {
-        stepBtn.disabled = true;
-        runBtn.disabled = true;
-        stepBtn.title = "Disabled: E-Stop is latched; clear E-Stop first";
-        runBtn.title = "Disabled: E-Stop is latched; clear E-Stop first";
-      } else if (!st.plan_approved) {
-        stepBtn.disabled = true;
-        runBtn.disabled = true;
-        stepBtn.title = "Disabled: Approve the proposed skill plan first (D11)";
-        runBtn.title = "Disabled: Approve the proposed skill plan first (D11)";
-      } else {
-        stepBtn.disabled = false;
-        runBtn.disabled = false;
-        stepBtn.title = "Execute exactly 1 skill via /api/step (Invariant I3)";
-        runBtn.title = "Run approved plan to completion via /api/run (Invariant I4)";
-      }
-
-      // Render Plan List using textContent
-      const planBox = document.getElementById("planListContainer");
-      planBox.replaceChildren();
-      const planItems = st.plan || [];
-      planItems.forEach((item, idx) => {
-        const row = document.createElement("div");
-        row.className = "plan-item";
-        const left = document.createElement("span");
-        left.textContent = `${idx + 1}. ${item.skill}(${item.target_id || ""})`;
-        const right = document.createElement("span");
-        right.textContent = `[${String(item.status || "wait").toUpperCase()}]`;
-        row.appendChild(left);
-        row.appendChild(right);
-        planBox.appendChild(row);
-      });
-      document.getElementById("turnCounterBadge").textContent =
-        `TURN ${(st.turn_records || []).length} / ${planItems.length}`;
-
-      // Render Chat Log using textContent
-      const chatBox = document.getElementById("chatStream");
-      chatBox.replaceChildren();
-      (st.chat_log || []).forEach((msg) => {
-        const card = document.createElement("div");
-        card.className = "chat-card";
-        const head = document.createElement("div");
-        head.className = "chat-card-head";
-        const rSpan = document.createElement("span");
-        rSpan.textContent = String(msg.role || "INFO");
-        const tSpan = document.createElement("span");
-        tSpan.textContent = `t=${Number(msg.sim_time_s || 0).toFixed(3)}s`;
-        head.appendChild(rSpan);
-        head.appendChild(tSpan);
-        const body = document.createElement("div");
-        body.textContent = String(msg.text || "");
-        card.appendChild(head);
-        card.appendChild(body);
-        chatBox.appendChild(card);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      // Render Tracker Table using textContent
-      const tbody = document.getElementById("trackerTableBody");
-      tbody.replaceChildren();
-      (st.tracks || []).forEach((tr) => {
-        const trEl = document.createElement("tr");
-        const cells = [
-          String(tr.track_id || ""),
-          String(tr.label || ""),
-          String(tr.status || ""),
-          `(${Number(tr.bottom_px[0]).toFixed(1)}, ${Number(tr.bottom_px[1]).toFixed(1)})`,
-          `(${Number(tr.raw_xy_m[0]).toFixed(3)}, ${Number(tr.raw_xy_m[1]).toFixed(3)})`,
-          `(${Number(tr.xy_m[0]).toFixed(3)}, ${Number(tr.xy_m[1]).toFixed(3)})`,
-          `${Number(tr.height_m).toFixed(3)}m [${tr.height_source}]`
-        ];
-        cells.forEach((val) => {
-          const td = document.createElement("td");
-          td.textContent = val;
-          trEl.appendChild(td);
-        });
-        tbody.appendChild(trEl);
-      });
-
-      // Render Transcript & SHA-256 Hash from Python
-      document.getElementById("actionHashDisplay").textContent =
-        String(st.action_log_sha256 || "").slice(0, 24) + "...";
-      const transBox = document.getElementById("transcriptContainer");
-      transBox.replaceChildren();
-      (st.turn_records || []).forEach((rec) => {
-        const line = document.createElement("div");
-        line.textContent = JSON.stringify(rec);
-        transBox.appendChild(line);
-      });
-
-      // Render Joints from Python config + state
-      const jointsBox = document.getElementById("jointsContainer");
-      jointsBox.replaceChildren();
-      const jointSpecs = (ui.config && ui.config.robot && ui.config.robot.joints) || {};
-      const jointsDeg = st.joints_deg || {};
-      Object.keys(jointsDeg).forEach((jname) => {
-        const spec = jointSpecs[jname] || { min_deg: -170, max_deg: 170, channel: 0, provenance: "design" };
-        const row = document.createElement("div");
-        row.className = "pred-item";
-        const nameEl = document.createElement("span");
-        nameEl.textContent = `${jname} [ch${spec.channel} · ${spec.provenance}]`;
-        const valEl = document.createElement("span");
-        valEl.textContent = `${Number(jointsDeg[jname]).toFixed(1)} deg [${spec.min_deg}..${spec.max_deg}]`;
-        row.appendChild(nameEl);
-        row.appendChild(valEl);
-        jointsBox.appendChild(row);
-      });
-
-      // Render Privileged & Perceived outcomes (I5 / F3)
-      const ep = st.episode_summary || {};
-      document.getElementById("failureModeBadge").textContent = `failure_mode: ${ep.failure_mode || "none"}`;
-      const privEl = document.getElementById("metricPrivSuccess");
-      if (ep.task_success_privileged === null || ep.task_success_privileged === undefined) {
-        privEl.textContent = "N/A (REAL CAM)";
-      } else {
-        privEl.textContent = ep.task_success_privileged ? "PASS (TRUE)" : "FALSE";
-      }
-      const percEl = document.getElementById("metricPercSuccess");
-      percEl.textContent = ep.task_success_perceived ? "PASS (TRUE)" : "FALSE";
-
-      const predGrid = document.getElementById("predicateGrid");
-      predGrid.replaceChildren();
-      const preds = st.predicates || {};
-      Object.keys(preds).forEach((pname) => {
-        const item = document.createElement("div");
-        item.className = "pred-item";
-        const kSpan = document.createElement("span");
-        kSpan.textContent = pname;
-        const vSpan = document.createElement("span");
-        vSpan.textContent = preds[pname] ? "TRUE" : "FALSE";
-        item.appendChild(kSpan);
-        item.appendChild(vSpan);
-        predGrid.appendChild(item);
-      });
-
-      // Render NDJSON log using textContent
-      const ndBox = document.getElementById("ndjsonLog");
-      ndBox.replaceChildren();
-      (st.ndjson_log || []).forEach((entry) => {
-        const wrap = document.createElement("div");
-        const cLine = document.createElement("div");
-        cLine.textContent = `> ${JSON.stringify(entry.cmd)}`;
-        const aLine = document.createElement("div");
-        aLine.textContent = `< ${JSON.stringify(entry.ack)}`;
-        wrap.appendChild(cLine);
-        wrap.appendChild(aLine);
-        ndBox.appendChild(wrap);
-      });
-      document.getElementById("fwStateBadge").textContent =
-        st.estop ? "STATE: ESTOP_HOLD" : "STATE: ACTIVE";
-
-      // Update TCP overlay
-      if (st.tcp && st.tcp.position) {
-        const [tx, ty, tz] = st.tcp.position;
-        document.getElementById("tcpPoseOverlay").textContent =
-          `x=${tx >= 0 ? "+" : ""}${tx.toFixed(3)} y=${ty >= 0 ? "+" : ""}${ty.toFixed(3)} z=${tz >= 0 ? "+" : ""}${tz.toFixed(3)}`;
-        document.getElementById("jawAzimuthOverlay").textContent = `${Number(st.tcp.azimuth_deg).toFixed(1)} deg`;
-        document.getElementById("jawOpeningOverlay").textContent = `${(Number(st.tcp.opening_m) * 1000).toFixed(1)} mm`;
-      }
-
-      drawSimCanvas();
-      drawCameraCanvas();
-    }
-
-    // Viewport A: Pure 3D->2D display of keypoints and objects supplied by Python /api/state
-    function drawSimCanvas() {
-      const canvas = document.getElementById("simCanvas");
-      const ctx = canvas.getContext("2d");
-      const W = canvas.width, H = canvas.height;
-      ctx.fillStyle = "#08090a";
-      ctx.fillRect(0, 0, W, H);
-
-      if (!ui.state || !ui.state.tcp || !ui.state.tcp.keypoints_xyz) return;
-
-      function proj(pt) {
-        const [x, y, z] = pt;
-        if (ui.simViewMode === "TOP") {
-          return [W / 2 + x * 1100, H * 0.82 - y * 1100];
-        }
-        if (ui.simViewMode === "SIDE") {
-          return [W * 0.18 + y * 1150, H * 0.78 - z * 1150];
-        }
-        const isoX = (x - (y - 0.15) * 0.55) * 1050;
-        const isoY = -z * 1050 + (x * 0.25 + (y - 0.15) * 0.45) * 650;
-        return [W * 0.52 + isoX, H * 0.68 + isoY];
-      }
-
-      // Draw workspace disk from /api/config
-      if (ui.config && ui.config.robot && ui.config.robot.safety) {
-        const [cx, cy] = ui.config.robot.safety.workspace_centre;
-        const rad = ui.config.robot.safety.workspace_radius;
-        ctx.beginPath();
-        for (let i = 0; i <= 48; i++) {
-          const ang = (2 * Math.PI * i) / 48;
-          const [px, py] = proj([cx + rad * Math.cos(ang), cy + rad * Math.sin(ang), 0.001]);
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.strokeStyle = "#3b82f6";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-
-      // Draw objects from /api/state
-      (ui.state.objects || []).forEach((obj) => {
-        const [u, v] = proj(obj.pos);
-        ctx.fillStyle = obj.is_bin ? "#238845" : (obj.name.includes("blue") ? "#3b6fd9" : "#d94040");
-        ctx.fillRect(u - 12, v - 12, 24, 24);
-        ctx.fillStyle = "#e5e7eb";
-        ctx.font = "10px monospace";
-        ctx.fillText(String(obj.name), u - 20, v - 16);
-      });
-
-      // Draw kinematic chain keypoints computed by Python
-      const kp = ui.state.tcp.keypoints_xyz;
-      const chain = [kp.base, kp.shoulder, kp.elbow, kp.wrist, kp.tip];
-      ctx.strokeStyle = ui.state.estop ? "#ef4444" : "#d1d5db";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      chain.forEach((pt, idx) => {
-        const [u, v] = proj(pt);
-        if (idx === 0) ctx.moveTo(u, v);
-        else ctx.lineTo(u, v);
-      });
-      ctx.stroke();
-    }
-
-    // Viewport B: Draws the JPEG frame fetched from Python /api/frame.jpg
-    function drawCameraCanvas() {
-      const canvas = document.getElementById("camCanvas");
-      const ctx = canvas.getContext("2d");
-      if (ui.frameLoaded && ui.frameImg.complete && ui.frameImg.naturalWidth > 0) {
-        ctx.drawImage(ui.frameImg, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = "#11141a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("resetSceneBtn").addEventListener("click", async () => {
-        const level = document.getElementById("taskSelect").value;
-        const seed = parseInt(document.getElementById("seedSelect").value || "0", 10);
-        await apiFetch("/api/reset", {
-          method: "POST",
-          body: JSON.stringify({ seed, level })
-        });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("camSimBtn").addEventListener("click", async () => {
-        await apiFetch("/api/camera_source", {
-          method: "POST",
-          body: JSON.stringify({ source: "sim" })
-        });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("camEspBtn").addEventListener("click", async () => {
-        const calFile = document.getElementById("calibrationFileInput").value.trim();
-        const payload = { source: "esp32_cam", allow_real_camera_with_sim_arm: true };
-        if (calFile) payload.calibration_file = calFile;
-        await apiFetch("/api/camera_source", {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("chatForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const text = document.getElementById("chatInput").value.trim();
-        if (!text) return;
-        await apiFetch("/api/task", {
-          method: "POST",
-          body: JSON.stringify({ text })
-        });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("approvePlanBtn").addEventListener("click", async () => {
-        await apiFetch("/api/approve", { method: "POST", body: JSON.stringify({}) });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("stepSkillBtn").addEventListener("click", async () => {
-        await apiFetch("/api/step", { method: "POST", body: JSON.stringify({}) });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("runLoopBtn").addEventListener("click", async () => {
-        await apiFetch("/api/run", { method: "POST", body: JSON.stringify({}) });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("estopBtn").addEventListener("click", async () => {
-        const nextEstop = !(ui.state && ui.state.estop);
-        await apiFetch("/api/estop", {
-          method: "POST",
-          body: JSON.stringify({ estop: nextEstop })
-        });
-        await fetchConfigAndState();
-      });
-
-      document.getElementById("refreshFrameBtn").addEventListener("click", refreshCameraFrame);
-
-      document.getElementById("simViewIsoBtn").addEventListener("click", () => {
-        ui.simViewMode = "ISO";
-        drawSimCanvas();
-      });
-      document.getElementById("simViewSideBtn").addEventListener("click", () => {
-        ui.simViewMode = "SIDE";
-        drawSimCanvas();
-      });
-      document.getElementById("simViewTopBtn").addEventListener("click", () => {
-        ui.simViewMode = "TOP";
-        drawSimCanvas();
-      });
-
-      window.addEventListener("keydown", (e) => {
-        if (document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) {
-          return;
-        }
-        const k = e.key.toLowerCase();
-        if (k === "p") document.getElementById("approvePlanBtn").click();
-        else if (k === "s" && !document.getElementById("stepSkillBtn").disabled) document.getElementById("stepSkillBtn").click();
-        else if (k === "e") document.getElementById("estopBtn").click();
-      });
-
-      fetchConfigAndState();
-      ui.pollTimer = setInterval(fetchConfigAndState, 1500);
-    });
-  </script>
+<header>
+  <div class="row"><span class="brand">IRobots<span>v2 operator console</span></span>
+    <span id="connectionBanner" class="pill conn">Connecting</span>
+    <span id="modeBadge" class="pill">Simulation</span>
+    <span id="safetyBannerBadge" class="pill">Safety supervisor: clear</span></div>
+  <div class="row">
+    <div class="row" role="group" aria-label="Camera source">
+      <button id="camSimBtn" type="button" class="btn on">Simulated camera</button>
+      <button id="camEspBtn" type="button" class="btn" title="Needs a marker calibration file">ESP32-CAM</button></div>
+    <span class="pill">t <span id="simClockDisplay">0.000</span> s · <span id="simStepsDisplay">0</span> steps</span>
+    <button id="estopBtn" type="button" class="estop" title="Halt the arm now (E)">E-stop</button></div>
+</header>
+<main>
+  <section class="rail" aria-label="Task">
+    <div><h2>Scene</h2>
+      <div class="two"><div><label for="taskSelect">Task</label><select id="taskSelect"><option value="L1">L1 · lift red block</option><option value="L2">L2 · sort into bin</option></select></div>
+      <div><label for="seedSelect">Seed (0–29)</label><input id="seedSelect" type="number" min="0" max="29" value="0" /></div></div>
+      <div style="margin-top:8px"><label for="calibrationFileInput">Marker calibration file (ESP32-CAM only)</label><input id="calibrationFileInput" type="text" placeholder="path/to/markers.yaml" /></div>
+      <button id="resetSceneBtn" type="button" class="btn" style="margin-top:8px">Reset scene</button></div>
+    <div><h2>Instruction</h2>
+      <form id="chatForm"><label for="chatInput">What should the arm do?</label>
+        <input id="chatInput" type="text" value="Pick up the red block and lift it off the table." />
+        <button id="sendTaskBtn" type="submit" class="btn" style="margin-top:8px">Make a plan</button></form></div>
+    <div><h2>Plan <small id="planApprovalStatus">Awaiting approval</small></h2>
+      <div id="planListContainer" class="plan"></div>
+      <div class="three" style="margin-top:12px">
+        <button id="approvePlanBtn" type="button" class="btn pri" title="Approve plan (P)">Approve</button>
+        <button id="stepSkillBtn" type="button" class="btn" disabled>Step</button>
+        <button id="runLoopBtn" type="button" class="btn" disabled>Run</button></div>
+      <p id="notice" role="status" aria-live="polite"></p></div>
+  </section>
+  <section class="stage" aria-label="Workspace">
+    <div><h2>Arm <small><span id="turnCounterBadge">Turn 0</span></small></h2>
+      <canvas id="simCanvas" aria-label="Arm and workspace drawing"></canvas>
+      <div class="cap"><span>Tool tip <span id="tcpPoseOverlay">–</span> m</span><span>Jaw <span id="jawAzimuthOverlay">–</span> · opening <span id="jawOpeningOverlay">–</span></span>
+        <span class="row"><button id="simViewIsoBtn" type="button" class="btn on">Iso</button><button id="simViewSideBtn" type="button" class="btn">Side</button><button id="simViewTopBtn" type="button" class="btn">Top</button></span></div></div>
+    <div class="duo">
+      <div><h2><span id="camViewportTitle">Camera</span><button id="refreshFrameBtn" type="button" class="btn">Refresh</button></h2>
+        <canvas id="camCanvas" aria-label="Camera frame"></canvas>
+        <div class="cap"><span>Source <span id="camSourceOverlay">sim</span></span><span>Arm <span id="execModeOverlay">sim</span></span></div></div>
+      <div class="scroll"><h2>Tracked objects</h2>
+        <table><thead><tr><th>Id</th><th>Status</th><th>Pixel</th><th>Raw xy</th><th>Corrected xy</th><th>Height</th></tr></thead><tbody id="trackerTableBody"></tbody></table></div></div>
+    <div><div class="tabs" role="tablist">
+      <button type="button" class="btn tab on" data-pane="chatStream">Conversation</button>
+      <button type="button" class="btn tab" data-pane="transcriptContainer">Action log</button>
+      <button type="button" class="btn tab" data-pane="ndjsonLog">Arm protocol</button></div>
+      <div id="chatStream" class="log"></div><div id="transcriptContainer" class="log" hidden></div><div id="ndjsonLog" class="log" hidden></div>
+      <div class="cap"><span>Replay hash (SHA-256) <span id="actionHashDisplay">–</span></span><span id="fwStateBadge">Arm: active</span></div></div>
+  </section>
+  <section class="rail" aria-label="Telemetry">
+    <div><h2>Joints <small id="robotNameBadge"></small></h2><div id="jointsContainer"></div></div>
+    <div><h2>Safety</h2>
+      <div id="safetyRejectionOutcome" class="kv"><span>Last verdict</span><span>–</span></div>
+      <div class="kv"><span>Failure mode</span><span id="failureModeBadge">none</span></div></div>
+    <div><h2>Outcome</h2>
+      <div class="kv"><span>Privileged</span><span id="metricPrivSuccess">pending</span></div>
+      <div class="kv"><span>Perceived</span><span id="metricPercSuccess">pending</span></div>
+      <div id="predicateGrid" style="margin-top:8px"></div></div>
+  </section>
+</main>
+<script>
+const ui={cfg:null,st:null,view:"ISO",img:new Image(),ok:false};
+const $=id=>document.getElementById(id);
+const txt=(id,v)=>{$(id).textContent=v};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const el=(t,c,s)=>{const e=document.createElement(t);if(c)e.className=c;if(s!==undefined)e.textContent=s;return e};
+const f3=v=>Number(v).toFixed(3);
+ui.img.onload=()=>{ui.ok=true;drawCam()};
+async function api(path,body,quiet){
+  try{const r=await fetch(path,body===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    let d={};try{d=await r.json()}catch(_){}
+    if(!quiet)txt("notice",r.ok?"":String(d.error||d.message||("Request failed ("+r.status+")")));
+    return{ok:r.ok,d}}catch(_){return{ok:false,d:{}}}
+}
+function conn(up){const b=$("connectionBanner");b.textContent=up?"Connected":"Reconnecting";b.className="pill conn"+(up?" up":"")}
+async function refresh(){
+  if(!ui.cfg){const c=await api("/api/config",undefined,true);if(c.ok)ui.cfg=c.d}
+  const s=await api("/api/state",undefined,true);
+  if(!s.ok){conn(false);return}
+  ui.st=s.d;conn(true);render();ui.img.src="/api/frame.jpg?t="+Date.now();
+}
+const act=async(p,b)=>{await api(p,b===undefined?{}:b);await refresh()};
+function render(){
+  const st=ui.st,sv=st.safety_verdict||{approved:true,reason:"ok",detail:"ok",rejections:0};
+  const modes={"SIM":["Simulation",""],"HYBRID":["Hybrid: real camera, simulated arm","dbl"],"REAL CAMERA":["Real camera","inv"]};
+  const m=modes[st.badge]||modes.SIM;const mb=$("modeBadge");mb.textContent=m[0];mb.className="pill "+m[1];
+  txt("simClockDisplay",f3(st.sim_time_s||0));txt("simStepsDisplay",String(st.sim_steps||0));
+  $("camSimBtn").className="btn"+(st.camera_source==="sim"?" on":"");$("camEspBtn").className="btn"+(st.camera_source==="esp32_cam"?" on":"");
+  txt("camSourceOverlay",st.camera_source||"sim");txt("execModeOverlay",st.execution_mode||"sim");
+  const eb=$("estopBtn");eb.textContent=st.estop?"Clear e-stop":"E-stop";eb.className="estop"+(st.estop?" latched":"");
+  const sb=$("safetyBannerBadge");
+  if(st.estop){sb.textContent="E-stop latched: holding pose";sb.className="pill inv"}
+  else if(!sv.approved){sb.textContent="Rejected: "+sv.reason+" ("+sv.rejections+" total)";sb.className="pill inv"}
+  else{sb.textContent="Safety supervisor: clear ("+sv.rejections+" rejections)";sb.className="pill"}
+  const so=$("safetyRejectionOutcome");so.replaceChildren(el("span","","Last verdict"),el("span","",sv.reason+(sv.approved?"":" – "+sv.detail)));
+  const why=st.estop?"Clear the e-stop first":(!st.plan_approved?"Approve the plan first":"");
+  ["stepSkillBtn","runLoopBtn"].forEach(i=>{$(i).disabled=!!why;$(i).title=why||(i==="stepSkillBtn"?"Run one skill (S)":"Run the whole plan")});
+  txt("planApprovalStatus",st.plan_approved?"Approved":"Awaiting approval");
+  const pl=$("planListContainer");pl.replaceChildren();const items=st.plan||[];
+  items.forEach((it,i)=>{const s=String(it.status||"wait").toLowerCase();const row=el("div");const l=el("span");
+    l.append(el("i","mk "+(s==="done"?"done":s==="fail"||s==="failed"?"fail":s==="run"||s==="now"?"now":"")),document.createTextNode(it.skill+(it.target_id?" "+it.target_id:"")));
+    row.append(l,el("span","",s));pl.appendChild(row)});
+  txt("turnCounterBadge","Turn "+(st.turn_records||[]).length+" of "+items.length);
+  const cs=$("chatStream");cs.replaceChildren();(st.chat_log||[]).forEach(g=>{const d=el("div");d.append(el("span","who",String(g.role||"info")+"  "),document.createTextNode(String(g.text||"")));cs.appendChild(d)});cs.scrollTop=cs.scrollHeight;
+  const tb=$("trackerTableBody");tb.replaceChildren();
+  (st.tracks||[]).forEach(t=>{const r=el("tr");[t.track_id+" "+(t.label||""),t.status,"("+Number(t.bottom_px[0]).toFixed(0)+", "+Number(t.bottom_px[1]).toFixed(0)+")","("+f3(t.raw_xy_m[0])+", "+f3(t.raw_xy_m[1])+")","("+f3(t.xy_m[0])+", "+f3(t.xy_m[1])+")",f3(t.height_m)+" m ("+t.height_source+")"].forEach(v=>r.appendChild(el("td","",String(v))));tb.appendChild(r)});
+  txt("actionHashDisplay",String(st.action_log_sha256||"").slice(0,16)||"–");
+  const tr=$("transcriptContainer");tr.replaceChildren();(st.turn_records||[]).forEach(r=>tr.appendChild(el("div","",JSON.stringify(r))));
+  const jb=$("jointsContainer");jb.replaceChildren();const specs=(ui.cfg&&ui.cfg.robot&&ui.cfg.robot.joints)||{};
+  txt("robotNameBadge",(ui.cfg&&ui.cfg.robot&&ui.cfg.robot.name)||"");
+  Object.keys(st.joints_deg||{}).forEach(n=>{const sp=specs[n]||{min_deg:-170,max_deg:170};const v=Number(st.joints_deg[n]);
+    const row=el("div","kv");row.append(el("span","",n.replace(/_/g," ")),el("span","",v.toFixed(1)+"°"));
+    const bar=el("div","bar");const k=el("i");k.style.left=Math.max(0,Math.min(100,(v-sp.min_deg)/(sp.max_deg-sp.min_deg)*100))+"%";bar.appendChild(k);
+    jb.append(row,bar)});
+  const ep=st.episode_summary||{};txt("failureModeBadge",ep.failure_mode||"none");
+  txt("metricPrivSuccess",ep.task_success_privileged==null?"n/a (real camera)":(ep.task_success_privileged?"success":"not yet"));
+  txt("metricPercSuccess",ep.task_success_perceived?"success":"not yet");
+  const pg=$("predicateGrid");pg.replaceChildren();Object.keys(st.predicates||{}).forEach(k=>{const v=!!st.predicates[k];const r=el("div","kv");const l=el("span");l.append(el("i","mk"+(v?" done":"")),document.createTextNode(k.replace(/_/g," ")));r.append(l,el("span","",v?"true":"false"));pg.appendChild(r)});
+  const nd=$("ndjsonLog");nd.replaceChildren();(st.ndjson_log||[]).forEach(e=>{nd.appendChild(el("div","","> "+JSON.stringify(e.cmd)));nd.appendChild(el("div","who","< "+JSON.stringify(e.ack)))});
+  txt("fwStateBadge",st.estop?"Arm: holding (e-stop)":"Arm: active");
+  if(st.tcp&&st.tcp.position){const p=st.tcp.position;txt("tcpPoseOverlay",f3(p[0])+", "+f3(p[1])+", "+f3(p[2]));txt("jawAzimuthOverlay",Number(st.tcp.azimuth_deg).toFixed(1)+"°");txt("jawOpeningOverlay",(Number(st.tcp.opening_m)*1000).toFixed(1)+" mm")}
+  drawSim();drawCam();
+}
+function prep(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1,w=Math.max(200,Math.round(r.width)),h=Math.max(120,Math.round(r.height));
+  if(c.width!==w*d||c.height!==h*d){c.width=w*d;c.height=h*d}const x=c.getContext("2d");x.setTransform(d,0,0,d,0,0);x.fillStyle=css("--bg");x.fillRect(0,0,w,h);return[x,w,h]}
+function P(p){const[x,y,z]=p;return ui.view==="TOP"?[x,-y]:ui.view==="SIDE"?[y,-z]:[x+.45*y,-(z+.4*y)]}
+function drawSim(){
+  const[x,w,h]=prep($("simCanvas")),st=ui.st;if(!st)return;
+  const ws=(ui.cfg&&ui.cfg.robot&&ui.cfg.robot.safety)||{workspace_centre:[0,.2],workspace_radius:.1};
+  const[cx,cy]=ws.workspace_centre,R=ws.workspace_radius,ring=[];
+  for(let i=0;i<=64;i++){const a=i/64*2*Math.PI;ring.push([cx+R*Math.cos(a),cy+R*Math.sin(a),0])}
+  const ref=ring.concat([[0,0,0],[0,0,.32],[cx,cy,.3]]).map(P);
+  const xs=ref.map(q=>q[0]),ys=ref.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),m=36;
+  const k=Math.min((w-2*m)/(x1-x0),(h-2*m)/(y1-y0)),ox=(w-k*(x1-x0))/2-k*x0,oy=(h-k*(y1-y0))/2-k*y0;
+  const S=p=>{const q=P(p);return[ox+k*q[0],oy+k*q[1]]};
+  const ink=css("--ink"),dim=css("--ink3"),bg=css("--bg");
+  x.strokeStyle=dim;x.lineWidth=1;x.setLineDash([4,4]);x.beginPath();ring.forEach((p,i)=>{const[u,v]=S(p);i?x.lineTo(u,v):x.moveTo(u,v)});x.stroke();x.setLineDash([]);
+  x.font="11px "+css("--sans");x.fillStyle=dim;const lab=S([cx+R,cy,0]);x.fillText("workspace r "+(R*1000).toFixed(0)+" mm",lab[0]+6,lab[1]);
+  (st.objects||[]).forEach(o=>{const[u,v]=S(o.pos),s=Math.max(10,(o.is_bin?.08:.04)*k);x.strokeStyle=ink;x.lineWidth=1.5;x.strokeRect(u-s/2,v-s/2,s,s);
+    if(o.is_bin)x.strokeRect(u-s/2+4,v-s/2+4,s-8,s-8);x.fillStyle=ink;x.fillText(String(o.name).replace(/_/g," "),u-s/2,v-s/2-6)});
+  const kp=st.tcp&&st.tcp.keypoints_xyz;if(!kp)return;
+  const chain=[kp.base,kp.shoulder,kp.elbow,kp.wrist,kp.tip].map(S);
+  x.strokeStyle=ink;x.lineWidth=st.estop?5:3;x.lineCap="round";x.lineJoin="round";x.beginPath();chain.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke();
+  chain.slice(0,4).forEach(q=>{x.beginPath();x.arc(q[0],q[1],4.5,0,7);x.fillStyle=bg;x.fill();x.lineWidth=1.5;x.stroke()});
+  const t=chain[4];x.lineWidth=1;x.beginPath();x.moveTo(t[0]-9,t[1]);x.lineTo(t[0]+9,t[1]);x.moveTo(t[0],t[1]-9);x.lineTo(t[0],t[1]+9);x.stroke();
+  x.fillStyle=ink;x.fillText(st.estop?"holding":"z "+(kp.tip[2]*1000).toFixed(0)+" mm",t[0]+12,t[1]-8);
+}
+function drawCam(){
+  const[x,w,h]=prep($("camCanvas"));
+  if(ui.ok&&ui.img.complete&&ui.img.naturalWidth>0)x.drawImage(ui.img,0,0,w,h);
+  else{x.fillStyle=css("--ink3");x.font="12px "+css("--sans");x.fillText("No camera frame yet",14,24)}
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  $("resetSceneBtn").onclick=()=>act("/api/reset",{seed:parseInt($("seedSelect").value||"0",10),level:$("taskSelect").value});
+  $("camSimBtn").onclick=()=>act("/api/camera_source",{source:"sim"});
+  $("camEspBtn").onclick=()=>{const p={source:"esp32_cam",allow_real_camera_with_sim_arm:true},f=$("calibrationFileInput").value.trim();if(f)p.calibration_file=f;act("/api/camera_source",p)};
+  $("chatForm").onsubmit=e=>{e.preventDefault();const t=$("chatInput").value.trim();if(t)act("/api/task",{text:t})};
+  $("approvePlanBtn").onclick=()=>act("/api/approve");$("stepSkillBtn").onclick=()=>act("/api/step");$("runLoopBtn").onclick=()=>act("/api/run");
+  $("estopBtn").onclick=()=>act("/api/estop",{estop:!(ui.st&&ui.st.estop)});
+  $("refreshFrameBtn").onclick=()=>{ui.img.src="/api/frame.jpg?t="+Date.now()};
+  [["Iso","ISO"],["Side","SIDE"],["Top","TOP"]].forEach(([n,v])=>$("simView"+n+"Btn").onclick=()=>{ui.view=v;["Iso","Side","Top"].forEach(q=>$("simView"+q+"Btn").className="btn"+(q===n?" on":""));drawSim()});
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(t=>{t.className="btn tab"+(t===b?" on":"");$(t.dataset.pane).hidden=t!==b})});
+  window.addEventListener("resize",()=>{drawSim();drawCam()});
+  window.addEventListener("keydown",e=>{if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName))return;const k=e.key.toLowerCase();
+    if(k==="p")$("approvePlanBtn").click();else if(k==="s"&&!$("stepSkillBtn").disabled)$("stepSkillBtn").click();else if(k==="e")$("estopBtn").click()});
+  refresh();setInterval(refresh,1500);
+});
+</script>
 </body>
 </html>
