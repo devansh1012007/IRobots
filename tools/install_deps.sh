@@ -9,8 +9,11 @@
 #        - raw HTTP downloads use `curl --continue-at -`, which resumes a
 #          partial file byte-for-byte.
 #   3. Installing is idempotent: running it twice is a no-op.
-#   4. It verifies the result by importing every module, so a "successful"
-#      install that produced a broken environment fails loudly.
+#   4. It registers the 5 in-tree workspace packages via an `irobots_workspace.pth`
+#      file in `.venv`'s site-packages so `pytest` and `python -m irobots_eval.*`
+#      work directly without manual `PYTHONPATH` exports.
+#   5. It verifies the result by importing every third-party and workspace module,
+#      so a "successful" install that produced a broken environment fails loudly.
 #
 # Usage:
 #   tools/install_deps.sh              # install everything
@@ -91,13 +94,39 @@ download() {
   mv -f "${dest}.part" "$dest"
 }
 
+install_workspace_pth() {
+  log "registering workspace packages in $VENV (irobots_workspace.pth)"
+  REPO_ROOT_ENV="$REPO_ROOT" "$VENV/bin/python" - <<'PY'
+import os
+import sysconfig
+from pathlib import Path
+
+repo_root = Path(os.environ["REPO_ROOT_ENV"]).resolve()
+purelib = Path(sysconfig.get_paths()["purelib"])
+purelib.mkdir(parents=True, exist_ok=True)
+pth_file = purelib / "irobots_workspace.pth"
+packages = [
+    "irobots_core",
+    "irobots_nodes",
+    "irobots_msgs",
+    "irobots_eval",
+    "irobots_bringup",
+]
+lines = [str(repo_root / "ros2_ws" / "src" / pkg) for pkg in packages]
+pth_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+print(f"  wrote {pth_file}")
+PY
+}
+
 verify() {
+  install_workspace_pth
   log "verifying the environment..."
   "$VENV/bin/python" - <<'PY'
 import importlib, sys
 mods = [
     "numpy", "yaml", "scipy", "cv2", "PIL", "torch", "mujoco",
     "ultralytics", "matplotlib", "pytest",
+    "irobots_core", "irobots_nodes", "irobots_msgs", "irobots_eval", "irobots_bringup",
 ]
 bad = []
 for m in mods:

@@ -82,7 +82,7 @@ Both arms use the exact same Z policy, perception, safety supervisor, turn budge
 
 ## RQ3 - Failure Taxonomy & SC4 Unattended Suite (`fallback sim`, `runs/phase6/rq3.json`)
 
-* **SC4 unattended reliability (`fallback sim`)**: **150/150** episodes completed unattended with **0 hangs** in `51.2 s` -> **PASS** (`fallback sim`).
+* **SC4 unattended reliability (`fallback sim`)**: **150/150** episodes completed unattended with **0 hangs** in `48.9 s` -> **PASS** (`fallback sim`).
 
 | Failure mode | Count (150 scripted/skill episodes) | Recoverable? | Recovery / Guard Mechanism |
 |---|---|---|---|

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-"""ESP32-CAM real-frame capture and evaluation CLI (PLAN:irobots-v2:C19, C20).
+"""ESP32-CAM real-frame capture and evaluation CLI (PLAN:irobots-v2:C19, C20, C67-F8).
 
 Follows the specification in ``docs/hardware/CAMERA_CAPTURE.md``:
 - Capture mode: ``python tools/capture_real_frames.py --board board.yaml --out data/real/ --count 300``
 - Eval mode:    ``python tools/capture_real_frames.py --eval data/real/ --report runs/real/eval.json``
 
-Never fabricates frames. When the camera endpoint is unreachable or ``data/real/``
-has not been captured yet, it reports the status cleanly without inventing data.
+Never fabricates frames. When the camera endpoint is unreachable or ``BOARD_IP``
+is not configured in the environment, it reports ``pending_operator_capture``
+cleanly without inventing data.
 """
 
 from __future__ import annotations
@@ -20,7 +21,10 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "ros2_ws" / "src" / "irobots_core"))
+for _pkg in ("irobots_bringup", "irobots_eval", "irobots_msgs", "irobots_nodes", "irobots_core"):
+    _src = REPO_ROOT / "ros2_ws" / "src" / _pkg
+    if _src.is_dir() and str(_src) not in sys.path:
+        sys.path.insert(0, str(_src))
 
 import cv2  # noqa: E402
 import numpy as np  # noqa: E402
@@ -69,6 +73,11 @@ def main() -> int:
         type=str,
         default=str(REPO_ROOT / "runs" / "real" / "eval.json"),
     )
+    ap.add_argument(
+        "--strict",
+        action="store_true",
+        help="exit non-zero if BOARD_IP is unset during capture mode",
+    )
     args = ap.parse_args()
 
     robot = load_robot()
@@ -94,8 +103,17 @@ def main() -> int:
 
     board_ip = env_or("BOARD_IP")
     if not board_ip or not args.board:
-        print("capture requires --board <board.yaml> and BOARD_IP in the environment", file=sys.stderr)
-        return 2
+        msg = (
+            "pending_operator_capture: BOARD_IP is not set in environment (or --board omitted); "
+            "skipping live ESP32-CAM capture. Set BOARD_IP=<esp32-cam-ip> when hardware is connected."
+        )
+        print(msg, file=sys.stderr)
+        return 2 if args.strict else 0
+
+    board_path = Path(args.board)
+    if not board_path.exists() and not (REPO_ROOT / args.board).exists():
+        print(f"capture board file not found: {args.board}", file=sys.stderr)
+        return 2 if args.strict else 0
 
     board_cfg = load_yaml(args.board)
     board_corners = [(float(p[0]), float(p[1])) for p in board_cfg["corners_table_m"]]

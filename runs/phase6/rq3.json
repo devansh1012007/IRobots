@@ -6,7 +6,7 @@
     "total_episodes": 150,
     "completed_episodes": 150,
     "hangs": 0,
-    "wall_seconds": 51.17227257900231,
+    "wall_seconds": 48.860314965990256,
     "gate": {
       "criterion": "SC4",
       "min_episodes_required": 150,

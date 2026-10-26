@@ -1,0 +1,23 @@
+# Sample ChArUco / chessboard calibration board template (PLAN:irobots-v2:C19, C67-F8).
+# Used by `tools/capture_real_frames.py --board board.yaml --out data/real/ --count 300`.
+# Measure the 4 reference corners on your physical table in the arm base frame (metres)
+# before running a live ESP32-CAM capture with `export BOARD_IP=<esp32-cam-ip>`.
+
+board_type: "charuco_6x5_30mm"
+square_size_m: 0.030
+marker_size_m: 0.022
+
+# Four reference corners in arm base table coordinates (x_m, y_m):
+corners_table_m:
+  - [-0.090, 0.140]
+  - [0.090, 0.140]
+  - [0.090, 0.260]
+  - [-0.090, 0.260]
+
+# Ground-truth table objects for real-frame localisation and height evaluation:
+objects:
+  - id: "red_block_0"
+    label: "red block"
+    xy_m: [0.000, 0.200]
+    height_m: 0.040
+    footprint_m: 0.040

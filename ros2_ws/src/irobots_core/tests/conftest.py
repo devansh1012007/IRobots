@@ -1,23 +1,33 @@
 """Shared test fixtures.
 
 The core package is pure Python and must be importable without ROS, without
-MuJoCo and without the detector. The fixtures here make the package importable
-from a source checkout, so the tests run without an install step.
+MuJoCo and without the detector. The fixtures here make the workspace packages
+importable from a source checkout, so the tests run without an install step or
+manual PYTHONPATH.
 """
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 #: The repository root: ros2_ws/src/irobots_core/tests -> repo root.
 REPO_ROOT = Path(__file__).resolve().parents[4]
-CORE_SRC = REPO_ROOT / "ros2_ws" / "src" / "irobots_core"
+WORKSPACE_PACKAGES: tuple[str, ...] = (
+    "irobots_core",
+    "irobots_nodes",
+    "irobots_msgs",
+    "irobots_eval",
+    "irobots_bringup",
+)
 
-if str(CORE_SRC) not in sys.path:
-    sys.path.insert(0, str(CORE_SRC))
+for _pkg in reversed(WORKSPACE_PACKAGES):
+    _pkg_src = REPO_ROOT / "ros2_ws" / "src" / _pkg
+    if _pkg_src.is_dir() and str(_pkg_src) not in sys.path:
+        sys.path.insert(0, str(_pkg_src))
 
 
 @pytest.fixture(scope="session")
@@ -26,7 +36,7 @@ def repo_root() -> Path:
 
 
 @pytest.fixture(scope="session")
-def robot():
+def robot() -> Any:
     """The robot model, loaded from config/robot.yaml."""
     from irobots_core.robot_model import load_robot
 
@@ -34,8 +44,8 @@ def robot():
 
 
 @pytest.fixture(scope="session")
-def scene() -> dict:
+def scene() -> dict[str, Any]:
     """The parsed scene config."""
     from irobots_core.config import load_yaml
 
-    return load_yaml("config/scene.yaml")["scene"]
+    return dict(load_yaml("config/scene.yaml")["scene"])

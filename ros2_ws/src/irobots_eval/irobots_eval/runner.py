@@ -1,4 +1,4 @@
-"""Subprocess-isolated evaluation runner with hard kill and per-trial checkpointing (PLAN:irobots-v2:C40, SC4, I4).
+"""Subprocess-isolated evaluation runner with hard kill and per-trial checkpointing (PLAN:irobots-v2:C40, C67-F8, SC4, I4).
 
 Every trial runs in a separate subprocess with a hard wall-clock timeout so a
 hung simulator or model call cannot stall the remaining trials.
@@ -7,6 +7,7 @@ hung simulator or model call cannot stall the remaining trials.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -14,6 +15,26 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+WORKSPACE_PACKAGE_DIRS: tuple[Path, ...] = tuple(
+    REPO_ROOT / "ros2_ws" / "src" / pkg
+    for pkg in (
+        "irobots_core",
+        "irobots_nodes",
+        "irobots_msgs",
+        "irobots_eval",
+        "irobots_bringup",
+    )
+)
+
+
+def _subprocess_env() -> dict[str, str]:
+    env = dict(os.environ)
+    ws_paths = [str(p) for p in WORKSPACE_PACKAGE_DIRS if p.is_dir()]
+    existing = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = os.pathsep.join(ws_paths + ([existing] if existing else []))
+    return env
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +74,7 @@ class EvalRunner:
                 text=True,
                 timeout=self.wall_deadline_s,
                 check=False,
+                env=_subprocess_env(),
             )
             elapsed = time.perf_counter() - t0
             if completed_proc.returncode == 0 and completed_proc.stdout.strip():

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-command reproduction script for IRobots v2 (PLAN:irobots-v2:C61, C67-F7, SC5).
+# One-command reproduction script for IRobots v2 (PLAN:irobots-v2:C61, C67-F7, C67-F8, SC5).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,6 +10,9 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 if [[ -x "$VENV_DIR/bin/python" ]]; then
   PYTHON_BIN="$VENV_DIR/bin/python"
 fi
+
+WS_PYTHONPATH="$SCRIPT_DIR/ros2_ws/src/irobots_core:$SCRIPT_DIR/ros2_ws/src/irobots_nodes:$SCRIPT_DIR/ros2_ws/src/irobots_msgs:$SCRIPT_DIR/ros2_ws/src/irobots_eval:$SCRIPT_DIR/ros2_ws/src/irobots_bringup"
+export PYTHONPATH="${WS_PYTHONPATH}${PYTHONPATH:+:$PYTHONPATH}"
 
 echo "[reproduce] 1/5 Verifying generated firmware header matches config/robot.yaml..."
 "$PYTHON_BIN" tools/gen_firmware_config.py
